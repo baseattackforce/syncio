@@ -13,15 +13,15 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>Syncio</title>
 <style>
-  :root{--bg:#0f1115;--card:#1a1d24;--card2:#262a35;--fg:#f2f4f8;--mut:#8b93a3;--acc:#7c5cff;--bad:#ff6b6b}
+  :root{--bg:#0f1115;--card:rgba(255,255,255,.08);--card2:rgba(255,255,255,.15);--fg:#fff;--mut:rgba(255,255,255,.58);--acc:#fa2d48;--bad:#ff6b6b}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:16px/1.4 -apple-system,system-ui,Segoe UI,Roboto,sans-serif}
-  body{padding:env(safe-area-inset-top) max(16px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(16px,env(safe-area-inset-left));max-width:560px;margin:0 auto}
-  h1{font-size:28px;margin:22px 0 2px;letter-spacing:-.5px}
-  h2{font-size:18px;margin:22px 0 10px}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",system-ui,sans-serif;-webkit-font-smoothing:antialiased;letter-spacing:-.011em}
+  body{background:transparent;min-height:100vh;padding:env(safe-area-inset-top) max(16px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(16px,env(safe-area-inset-left));max-width:560px;margin:0 auto}
+  h1{font-size:34px;font-weight:800;margin:22px 0 2px;letter-spacing:-.03em}
+  h2{font-size:22px;font-weight:700;margin:22px 0 10px;letter-spacing:-.025em}
   .sub{color:var(--mut);margin:0 0 18px}
   .card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:14px}
-  button,.btn{appearance:none;border:0;border-radius:12px;padding:13px 16px;font:inherit;font-weight:600;color:var(--fg);background:var(--card2);text-align:center;cursor:pointer;touch-action:manipulation}
+  button,.btn{appearance:none;border:0;border-radius:12px;padding:13px 16px;font:inherit;font-weight:600;letter-spacing:-.01em;color:var(--fg);background:var(--card2);text-align:center;cursor:pointer;touch-action:manipulation}
   button:active,.btn:active{filter:brightness(.85)}
   .btn.block,button.block{display:block;width:100%}
   .pri{background:var(--acc)}
@@ -32,48 +32,80 @@
   .banner{background:var(--acc);margin-bottom:14px;display:flex!important;justify-content:space-between}
   .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 14px}
   .tile{position:relative;background:none;padding:0;text-align:left;border-radius:10px}
-  .tile img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;background:var(--card);box-shadow:0 6px 18px rgba(0,0,0,.4)}
-  .tile .n{font-size:14px;font-weight:700;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tile .a{font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block;background:var(--card);box-shadow:0 4px 14px rgba(0,0,0,.35),0 0 0 .5px rgba(255,255,255,.1)}
+  .tile .n{font-size:15px;font-weight:500;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile .a{font-size:14px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tile .del{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:var(--bad);display:flex;align-items:center;justify-content:center;font-size:14px}
   .empty{text-align:center;color:var(--mut);padding:28px 8px}
   .note{color:var(--mut);font-size:13px}
   /* room */
   .top{display:flex;align-items:center;gap:8px;margin:12px 0}
   .code{font-size:20px;font-weight:700;letter-spacing:4px}
-  .pill{font-size:12px;color:var(--mut);background:var(--card);padding:4px 10px;border-radius:999px;white-space:nowrap}
+  .pill{font-size:12px;font-weight:500;color:var(--mut);background:var(--card);padding:4px 10px;border-radius:999px;white-space:nowrap}
   .top .sp{flex:1}
-  #cover{display:block;width:min(100%,320px);aspect-ratio:1;object-fit:cover;border-radius:14px;margin:8px auto 16px;box-shadow:0 14px 40px rgba(0,0,0,.55);background:var(--card)}
-  #title{font-size:22px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #artist{color:var(--mut);margin-bottom:8px;min-height:22px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  input[type=range]{width:100%;accent-color:var(--acc);height:32px;margin:0}
-  .times{display:flex;justify-content:space-between;color:var(--mut);font-size:12px;margin-top:-4px}
-  .ctl{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:12px 0 6px}
-  .ctl button{background:none;font-size:26px;padding:10px 14px;flex:0 0 auto;width:56px}
-  .ctl #pp{background:var(--fg);color:var(--bg);width:68px;height:68px;border-radius:50%;font-size:26px;padding:0}
-  .ctl #shuf{opacity:.45}
-  .ctl #shuf.on{opacity:1;color:var(--acc)}
+  #cover{display:block;width:min(100%,340px);aspect-ratio:1;object-fit:cover;border-radius:12px;margin:10px auto 22px;box-shadow:0 18px 50px rgba(0,0,0,.6);background:var(--card);transition:transform .6s cubic-bezier(.2,.9,.3,1.1),box-shadow .6s}
+  #cover.paused{transform:scale(.86);box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  #title{font-size:22px;font-weight:700;letter-spacing:-.025em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #artist{font-size:20px;color:var(--mut);margin-bottom:10px;min-height:26px;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  input[type=range]{-webkit-appearance:none;appearance:none;background:transparent;width:100%;height:28px;margin:0;--pct:0%;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:3px;background:linear-gradient(90deg,#fff var(--pct),rgba(255,255,255,.28) var(--pct))}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;margin-top:-4px;opacity:0;transition:opacity .15s}
+  input[type=range].drag::-webkit-slider-thumb{opacity:1}
+  input[type=range].drag::-webkit-slider-runnable-track{height:8px;border-radius:4px;margin-top:-1px}
+  input[type=range]::-moz-range-track{height:5px;border-radius:3px;background:rgba(255,255,255,.28)}
+  input[type=range]::-moz-range-progress{height:5px;border-radius:3px;background:#fff}
+  input[type=range]::-moz-range-thumb{width:0;height:0;border:0}
+  .times{display:flex;justify-content:space-between;color:var(--mut);font-size:12px;font-weight:500;margin-top:-2px}
+  .ctl{display:flex;gap:4px;align-items:center;justify-content:space-between;margin:10px 0 8px}
+  .ctl button{background:none;color:#fff;padding:8px;flex:0 0 auto;width:52px;height:52px;border-radius:12px}
+  .ctl #pp{width:84px;height:84px;border-radius:50%;padding:0}
+  .ctl #shuf{color:rgba(255,255,255,.6)}
+  .ctl #shuf.on{background:rgba(255,255,255,.22);color:#fff}
   .ctl .ph{width:56px}
-  .ctl button svg{width:28px;height:28px;fill:currentColor;display:block;margin:auto}
-  .ctl #pp svg{width:34px;height:34px}
+  .ctl button svg{width:26px;height:26px;fill:currentColor;display:block;margin:auto}
+  .ctl #prev svg,.ctl #next svg{width:42px;height:42px}
+  .ctl #pp svg{width:66px;height:66px}
   .ico{display:inline-flex;vertical-align:middle}
   .ico svg{width:20px;height:20px;fill:currentColor}
   .small .ico{margin-right:2px;margin-left:-6px}
   .tile .del svg{width:16px;height:16px;fill:#fff}
+  #bg{position:fixed;inset:0;z-index:-1;background:var(--bg);transition:background 1.2s ease}
+  .ctl #lyBtn{color:rgba(255,255,255,.6)}
+  .ctl #lyBtn.on{background:rgba(255,255,255,.22);color:#fff}
+  /* Apple Music-style lyrics */
+  #lyrics{position:relative;height:min(58vh,460px);overflow-y:auto;margin:6px -6px 10px;padding:24% 6px 55%;scrollbar-width:none;-webkit-overflow-scrolling:touch;
+    -webkit-mask-image:linear-gradient(transparent 0,#000 13%,#000 80%,transparent 100%);mask-image:linear-gradient(transparent 0,#000 13%,#000 80%,transparent 100%)}
+  #lyrics::-webkit-scrollbar{display:none}
+  .ly{font-size:clamp(26px,8vw,34px);font-weight:700;line-height:1.16;letter-spacing:-.025em;padding:10px 8px;border-radius:12px;cursor:pointer;
+    color:rgba(255,255,255,.34);transform:scale(.92);transform-origin:left center;filter:blur(calc(var(--d,4) * .5px));
+    transition:color .5s ease,transform .55s cubic-bezier(.2,.8,.2,1),filter .5s ease;-webkit-tap-highlight-color:transparent}
+  .ly.on{color:#fff;transform:scale(1);filter:none}
+  .ly:active{background:rgba(255,255,255,.08)}
+  .ly.gap{display:flex;gap:8px;padding:18px 8px}
+  .ly.gap i{width:11px;height:11px;border-radius:50%;background:currentColor;opacity:.55}
+  .ly.gap.on i{animation:dot 1.3s ease-in-out infinite}
+  .ly.gap.on i:nth-child(2){animation-delay:.22s}
+  .ly.gap.on i:nth-child(3){animation-delay:.44s}
+  @keyframes dot{0%,100%{transform:scale(.7);opacity:.35}50%{transform:scale(1.2);opacity:1}}
+  .ly.plain{font-size:21px;font-weight:700;line-height:1.3;color:rgba(255,255,255,.82);transform:none;filter:none;cursor:default;padding:6px 8px;letter-spacing:-.01em}
+  .ly-note{color:var(--mut);font-size:13px;padding:0 8px 14px}
+  .ly-msg{color:rgba(255,255,255,.6);font-size:19px;font-weight:700;text-align:center;padding:26% 0}
   #queue{list-style:none;margin:0;padding:0}
   #queue li{padding:10px;border-radius:10px;cursor:pointer;display:flex;gap:10px}
   #queue li.cur{background:var(--card);color:var(--acc)}
+  #queue li{border-radius:12px;padding:11px 12px}
   #queue li .t{flex:1;min-width:0}
   #queue li .t b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #queue li .t span{display:block;font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tap{position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:32px;z-index:10}
   .tap button{background:var(--acc);font-size:20px;padding:22px;width:100%}
-  #toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));background:var(--card2);padding:12px 16px;border-radius:12px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+  #toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));background:#2c2c30;color:#fff;padding:12px 16px;border-radius:14px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
   #toast.on{opacity:1}
 </style>
 </head>
 <body>
 
+<div id="bg"></div>
 <audio id="audio" playsinline></audio>
 
 <!-- HOME / LIBRARY -->
@@ -118,6 +150,7 @@
   </div>
 
   <img id="cover" alt="">
+  <div id="lyrics" class="hide"></div>
   <div id="title">Nothing playing</div>
   <div id="artist"></div>
   <input type="range" id="seek" min="0" max="1000" value="0">
@@ -127,7 +160,7 @@
     <button id="prev" aria-label="Previous"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
     <button id="pp" aria-label="Play or pause"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
     <button id="next" aria-label="Next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
-    <span class="ph"></span>
+    <button id="lyBtn" aria-label="Lyrics"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zM6 9h12v2H6zm8 5H6v-2h8zm4-6H6V6h12z"/></svg></button>
   </div>
   <h2>Up next</h2>
   <ul id="queue"></ul>
@@ -153,7 +186,9 @@ let queue = [], orig = [], idx = -1, shuffleOn = false;   // host playback state
 let lastState = null, artMap = {}, oneWay = 0.05;        // guest view of host state
 let lib = [], hosted = [], editMode = false;
 let dragging = false, sessKey = '', sessPosAt = 0;
-let wantPlay = false;           // what the user last asked for; used to wake audio iOS has put to sleep
+let wantPlay = false;
+let lyMap = {};                 // track id -> { found, synced:[{t,s}], plain, instrumental }
+let lyricsOn = false; try { lyricsOn = localStorage.getItem('syncio.lyrics') === '1'; } catch {}           // what the user last asked for; used to wake audio iOS has put to sleep
 
 /* ---------- helpers ---------- */
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('on'),2600); }
@@ -179,7 +214,7 @@ function placeholder(t){
   if (phCache[k]) return phCache[k];
   const c = document.createElement('canvas'); c.width = c.height = 512;
   const x = c.getContext('2d'), g = x.createLinearGradient(0,0,512,512);
-  g.addColorStop(0,'#6a4cf0'); g.addColorStop(1,'#1a1d24');
+  g.addColorStop(0,'#fb5c74'); g.addColorStop(1,'#5a1624');
   x.fillStyle = g; x.fillRect(0,0,512,512);
   x.fillStyle = 'rgba(255,255,255,.9)'; x.font = '700 240px -apple-system,system-ui,sans-serif';
   x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(k,256,276);
@@ -355,6 +390,7 @@ function showHome(){
   $('banner').classList.toggle('hide', !inParty);
   $('bannerTxt').textContent = 'Party ' + code + ' is live. Tap to go back';
   $('joinCard').classList.toggle('hide', inParty);
+  $('bg').style.background = ''; bgKey = '';
   window.scrollTo(0,0);
 }
 function showRoom(){
@@ -396,6 +432,7 @@ function wireHost(){
   audio.addEventListener('play', () => { if (role==='host') { broadcast(); keepAwake(); } });
   ['pause','seeked','loadedmetadata'].forEach(ev => audio.addEventListener(ev, () => { if (role==='host') broadcast(); }));
   audio.addEventListener('ended', () => { if (role==='host') ctl('next'); });
+  audio.addEventListener('loadedmetadata', () => { if (role==='host') hostLyrics(); });
 }
 
 function openRoom(attempt, cb){
@@ -420,6 +457,7 @@ function onGuest(c){
     if (dest) peer.call(c.peer, dest.stream);
     c.send(stateMsg());
     sendArt(c);
+    sendLyrics(c);
     render();
   });
   c.on('data', d => {
@@ -510,12 +548,13 @@ function guestMsg(d){
   if (d.t === 'pong') oneWay = oneWay * .6 + ((performance.now() - d.id) / 2000) * .4;
   else if (d.t === 'state') { lastState = Object.assign(d, { recv: performance.now() }); wantPlay = d.playing; if (d.playing) keepAwake(); render(); }
   else if (d.t === 'art') { artMap[d.id] = d.url; render(); }
+  else if (d.t === 'lyrics') { lyMap[d.id] = d; renderLyrics(); }
 }
 
 function leave(silent){
   clearInterval(pingTimer);
   try { peer && peer.destroy(); } catch {}
-  peer = null; conn = null; conns = []; role = null; lastState = null; artMap = {};
+  peer = null; conn = null; conns = []; role = null; lastState = null; artMap = {}; lyMap = {}; bgKey = '';
   queue = []; orig = []; idx = -1; sessKey = '';
   audio.pause(); audio.srcObject = null; audio.removeAttribute('src');
   if (wakeLock) { try { wakeLock.release(); } catch {} wakeLock = null; }
@@ -548,6 +587,7 @@ function render(){
   $('title').textContent = m ? m.title : 'Nothing playing';
   $('artist').textContent = m ? m.artist + (m.album ? ' · ' + m.album : '') : '';
   const art = m ? artFor(m) : placeholder('S');
+  $('cover').classList.toggle('paused', !isPlaying());
   if ($('cover').dataset.k !== art.slice(-40) + art.length) { $('cover').src = art; $('cover').dataset.k = art.slice(-40) + art.length; }
   setPP(isPlaying());
   $('shuf').classList.toggle('hide', role !== 'host');
@@ -565,6 +605,8 @@ function render(){
     ul.append(li);
   });
   if (m) document.title = m.title + ' · Syncio';
+  applyBg(art);
+  renderLyrics();
   updateSession(true);
 }
 
@@ -578,23 +620,162 @@ function tick(){
   if (!role) return;
   const { cur, dur } = timing();
   $('cur').textContent = fmt(cur); $('dur').textContent = fmt(dur);
-  if (!dragging) $('seek').value = dur ? Math.round(cur / dur * 1000) : 0;
+  if (!dragging) { const v = dur ? Math.round(cur / dur * 1000) : 0; $('seek').value = v; $('seek').style.setProperty('--pct', v / 10 + '%'); }
   setPP(isPlaying());
+  $('cover').classList.toggle('paused', !isPlaying());
   updateSession(false);
 }
 setInterval(tick, 400);
 setInterval(() => { if (role === 'host' && conns.length && !audio.paused) broadcast(); }, 3000);
 
-$('seek').addEventListener('pointerdown', () => dragging = true);
-$('seek').addEventListener('touchstart', () => dragging = true, { passive: true });
+const seekStart = () => { dragging = true; $('seek').classList.add('drag'); };
+$('seek').addEventListener('pointerdown', seekStart);
+$('seek').addEventListener('touchstart', seekStart, { passive: true });
+$('seek').addEventListener('input', () => $('seek').style.setProperty('--pct', $('seek').value / 10 + '%'));
 $('seek').addEventListener('change', () => {
-  dragging = false;
+  dragging = false; $('seek').classList.remove('drag');
   const { dur } = timing();
   if (dur) act('seek', $('seek').value / 1000 * dur);
 });
 $('pp').onclick = () => { if (ctx) ctx.resume(); act(isPlaying() ? 'pause' : 'play'); };
 $('prev').onclick = () => act('prev');
 $('next').onclick = () => act('next');
+
+/* ---------- lyrics (LRCLIB) ---------- */
+const lyBusy = new Set();
+const firstArtist = a => (a || '').split(/\s*(?:,|;|&|\bfeat\.?|\bft\.?|\bx\b|\bwith\b)\s*/i)[0].trim();
+const cleanTitle = t => t.replace(/\s*[\(\[][^\)\]]*[\)\]]\s*/g, ' ').replace(/\s+-\s+.*$/, '').trim();
+const lyLoad = id => { try { return JSON.parse(localStorage.getItem('ly1:' + id)); } catch { return null; } };
+const lySave = (id, v) => { try { localStorage.setItem('ly1:' + id, JSON.stringify(v)); } catch {} };
+
+async function lrcGet(path, params){
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const r = await fetch('https://lrclib.net/api/' + path + '?' + new URLSearchParams(params), { signal: ctl.signal });
+    return r.ok ? await r.json() : null;
+  } catch { return null; } finally { clearTimeout(to); }
+}
+function parseLrc(txt){
+  if (!txt) return null;
+  let off = 0; const out = [];
+  for (const raw of txt.split(/\r?\n/)) {
+    const o = raw.match(/^\[offset:\s*([+-]?\d+)\]/i);
+    if (o) { off = +o[1] / 1000; continue; }
+    const ts = [...raw.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)];
+    if (!ts.length) continue;
+    const text = raw.replace(/\[[^\]]*\]/g, '').trim();
+    ts.forEach(m => out.push({ t: +m[1] * 60 + +m[2] - off, s: text }));
+  }
+  out.sort((a, b) => a.t - b.t);
+  return out.length ? out : null;
+}
+async function findLyrics(m, dur){
+  const artist = firstArtist(m.artist);
+  let hit = await lrcGet('get', Object.assign({ track_name: m.title, artist_name: artist, album_name: m.album || '' }, dur ? { duration: Math.round(dur) } : {}));
+  if (!hit || hit.statusCode || !(hit.syncedLyrics || hit.plainLyrics || hit.instrumental)) {
+    hit = null;
+    const list = await lrcGet('search', { track_name: cleanTitle(m.title), artist_name: artist });
+    if (Array.isArray(list)) {
+      const ok = list.filter(x => (x.syncedLyrics || x.plainLyrics || x.instrumental) && (!dur || !x.duration || Math.abs(x.duration - dur) <= 6));
+      ok.sort((a, b) => (!!b.syncedLyrics - !!a.syncedLyrics) || (dur ? Math.abs((a.duration||dur) - dur) - Math.abs((b.duration||dur) - dur) : 0));
+      hit = ok[0] || null;
+    }
+  }
+  if (!hit) return { found: false };
+  if (hit.instrumental) return { found: true, instrumental: true };
+  const synced = parseLrc(hit.syncedLyrics);
+  return { found: !!(synced || hit.plainLyrics), synced, plain: synced ? null : (hit.plainLyrics || null) };
+}
+
+async function hostLyrics(){            // host fetches once per song and shares with everyone
+  if (role !== 'host') return;
+  const m = queue[idx]; if (!m) return;
+  if (!lyMap[m.id]) { const c = lyLoad(m.id); if (c) lyMap[m.id] = c; }
+  if (lyMap[m.id]) { sendLyrics(); renderLyrics(); return; }
+  if (lyBusy.has(m.id)) return;
+  lyBusy.add(m.id);
+  const res = await findLyrics(m, isFinite(audio.duration) ? audio.duration : 0);
+  lyBusy.delete(m.id);
+  lyMap[m.id] = res;
+  if (res.found) lySave(m.id, res);     // misses aren't saved, so a flaky network can retry later
+  sendLyrics(); renderLyrics();
+}
+function sendLyrics(only){
+  const m = queue[idx]; if (!m || !lyMap[m.id]) return;
+  const msg = Object.assign({ t: 'lyrics', id: m.id }, lyMap[m.id]);
+  (only ? [only] : conns).forEach(c => c.open && c.send(msg));
+}
+
+let lyKey = '', lyLines = [], lyActive = -2, lyUserScroll = 0;
+function renderLyrics(){
+  if (!role) return;
+  const box = $('lyrics'), m = Q()[IDX()];
+  $('cover').classList.toggle('hide', lyricsOn);
+  box.classList.toggle('hide', !lyricsOn);
+  $('lyBtn').classList.toggle('on', lyricsOn);
+  if (!lyricsOn) return;
+  const d = m ? lyMap[m.id] : null;
+  const kind = !m ? '-' : !d ? '?' : !d.found ? 'n' : d.instrumental ? 'i' : d.synced ? 's' : 'p';
+  const key = (m ? m.id : '') + ':' + kind;
+  if (key === lyKey) return;
+  lyKey = key; lyLines = []; lyActive = -2; box.textContent = ''; box.scrollTop = 0;
+  const msg = t => { const p = document.createElement('div'); p.className = 'ly-msg'; p.textContent = t; box.append(p); };
+  if (!m) return msg('Nothing playing');
+  if (!d) return msg('Finding lyrics…');
+  if (!d.found) return msg('No lyrics for this song');
+  if (d.instrumental) return msg('Instrumental');
+  if (!d.synced) {
+    const n = document.createElement('div'); n.className = 'ly-note'; n.textContent = 'These lyrics aren\u2019t timed for this song.'; box.append(n);
+    d.plain.split(/\n/).forEach(t => { const el = document.createElement('div'); el.className = 'ly plain'; el.textContent = t || '\u00a0'; box.append(el); });
+    return;
+  }
+  d.synced.forEach(l => {
+    const el = document.createElement('div'); el.className = 'ly';
+    if (l.s) el.textContent = l.s;
+    else { el.classList.add('gap'); el.innerHTML = '<i></i><i></i><i></i>'; }
+    el.onclick = () => act('seek', Math.max(0, l.t));
+    box.append(el); lyLines.push(el);
+  });
+  lyricTick(true);
+}
+// The guest hears the stream a moment after the host's clock, so their highlight is nudged back to match.
+function lyricTime(){ const { cur } = timing(); return role === 'host' ? cur : cur - oneWay - 0.15; }
+function lyricTick(force){
+  if (!lyricsOn || !lyLines.length) return;
+  const m = Q()[IDX()], d = m && lyMap[m.id]; if (!d || !d.synced) return;
+  const t = lyricTime(); let a = -1;
+  for (let i = 0; i < d.synced.length; i++) { if (d.synced[i].t <= t) a = i; else break; }
+  if (a === lyActive && !force) return;
+  lyActive = a;
+  lyLines.forEach((el, i) => { el.classList.toggle('on', i === a); el.style.setProperty('--d', Math.min(Math.abs(i - a), 5)); });
+  const box = $('lyrics');
+  if (a >= 0 && Date.now() > lyUserScroll) box.scrollTo({ top: lyLines[a].offsetTop - box.clientHeight * 0.24, behavior: 'smooth' });
+}
+setInterval(() => lyricTick(false), 120);
+['touchstart','wheel','pointerdown'].forEach(ev => $('lyrics').addEventListener(ev, () => { lyUserScroll = Date.now() + 4000; }, { passive: true }));
+$('lyBtn').onclick = () => {
+  lyricsOn = !lyricsOn; lyKey = '';
+  try { localStorage.setItem('syncio.lyrics', lyricsOn ? '1' : '0'); } catch {}
+  renderLyrics(); if (lyricsOn && role === 'host') hostLyrics();
+};
+
+/* ---------- background tinted from the cover ---------- */
+let bgKey = '';
+function applyBg(art){
+  if (!role || art === bgKey) return;
+  bgKey = art;
+  const im = new Image();
+  im.onload = () => {
+    if (art !== bgKey) return;
+    const c = document.createElement('canvas'); c.width = c.height = 8;
+    const x = c.getContext('2d'); x.drawImage(im, 0, 0, 8, 8);
+    const d = x.getImageData(0, 0, 8, 8).data; let r = 0, g = 0, b = 0, n = 0;
+    for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i+1]; b += d[i+2]; n++; }
+    const f = .58 / Math.max(.58, Math.max(r, g, b) / n / 255 * 1.1);
+    $('bg').style.background = `linear-gradient(180deg, rgb(${r/n*f|0},${g/n*f|0},${b/n*f|0}) 0%, #0f1115 82%)`;
+  };
+  im.src = art;
+}
 
 /* ---------- waking audio that iOS paused in the background ---------- */
 function revive(){

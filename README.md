@@ -8,6 +8,8 @@ Listen to your own music together, in sync. Static site, no backend, works on Gi
 3. Friends type the code under **Join party**. The host's audio is streamed live to them over WebRTC (via Web Audio, since iOS has no `captureStream()`).
 4. Everyone can pause, skip and go back. Only the host can shuffle or change album.
 
+**Lyrics:** tap the lyrics button in a party. The host looks up time-synced lyrics on [LRCLIB](https://lrclib.net) (only the title, artist, album and length are sent) and shares them with everyone. Lines highlight in time, and tapping a line jumps there.
+
 The lock screen / Dynamic Island show the song title, artist, album and cover through the Media Session API.
 
 Add to Home Screen for a standalone app and so iOS doesn't clear the saved library after a week of non-use.
