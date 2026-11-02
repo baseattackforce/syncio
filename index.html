@@ -5,92 +5,125 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Syncio">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0f1115">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>Syncio</title>
 <style>
-  :root{--bg:#0f1115;--card:#1a1d24;--card2:#242832;--fg:#f2f4f8;--mut:#8b93a3;--acc:#7c5cff;--acc2:#5b3fe0;--ok:#3ddc97;--bad:#ff6b6b}
+  :root{--bg:#0f1115;--card:#1a1d24;--card2:#262a35;--fg:#f2f4f8;--mut:#8b93a3;--acc:#7c5cff;--bad:#ff6b6b}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.4 -apple-system,system-ui,Segoe UI,Roboto,sans-serif}
-  body{padding:env(safe-area-inset-top) max(16px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;max-width:560px;margin:0 auto}
-  h1{font-size:28px;margin:28px 0 4px;letter-spacing:-.5px}
-  p.sub{color:var(--mut);margin:0 0 24px}
-  .card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px}
-  button,.btn{appearance:none;border:0;border-radius:12px;padding:14px 16px;font:inherit;font-weight:600;color:var(--fg);background:var(--card2);width:100%;text-align:center;display:block;cursor:pointer;touch-action:manipulation}
-  button.pri,.btn.pri{background:var(--acc)}
+  html,body{margin:0;min-height:100%;background:var(--bg);color:var(--fg);font:16px/1.4 -apple-system,system-ui,Segoe UI,Roboto,sans-serif}
+  body{padding:env(safe-area-inset-top) max(16px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(16px,env(safe-area-inset-left));max-width:560px;margin:0 auto}
+  h1{font-size:28px;margin:22px 0 2px;letter-spacing:-.5px}
+  h2{font-size:18px;margin:22px 0 10px}
+  .sub{color:var(--mut);margin:0 0 18px}
+  .card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:14px}
+  button,.btn{appearance:none;border:0;border-radius:12px;padding:13px 16px;font:inherit;font-weight:600;color:var(--fg);background:var(--card2);text-align:center;cursor:pointer;touch-action:manipulation}
   button:active,.btn:active{filter:brightness(.85)}
-  input[type=text]{width:100%;padding:14px;border-radius:12px;border:2px solid var(--card2);background:var(--bg);color:var(--fg);font:inherit;font-size:20px;letter-spacing:4px;text-transform:uppercase;text-align:center;margin-bottom:10px}
-  .seg{display:flex;gap:8px;margin:0 0 12px}
-  .seg label{flex:1;background:var(--card2);border-radius:12px;padding:10px 12px;font-size:14px;cursor:pointer;border:2px solid transparent}
-  .seg input{display:none}
-  .seg input:checked+span{color:var(--fg)}
-  .seg label:has(input:checked){border-color:var(--acc)}
-  .seg b{display:block;font-size:15px}
-  .seg span{color:var(--mut);font-size:12px}
+  .btn.block,button.block{display:block;width:100%}
+  .pri{background:var(--acc)}
+  .small{padding:8px 14px;font-size:14px;border-radius:999px}
+  .row{display:flex;gap:10px;align-items:center}
+  input[type=text]{flex:1;min-width:0;padding:13px;border-radius:12px;border:2px solid var(--card2);background:var(--bg);color:var(--fg);font:inherit;font-size:20px;letter-spacing:4px;text-transform:uppercase;text-align:center}
   .hide{display:none!important}
-  #room{flex:1;display:flex;flex-direction:column;min-height:0}
-  .top{display:flex;align-items:center;gap:10px;margin:14px 0}
-  .code{font-size:22px;font-weight:700;letter-spacing:4px}
-  .pill{font-size:12px;color:var(--mut);background:var(--card);padding:4px 10px;border-radius:999px}
-  .top button{width:auto;padding:8px 14px;margin-left:auto}
-  #title{font-size:20px;font-weight:700;margin:6px 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #status{color:var(--mut);font-size:13px;min-height:18px;margin-bottom:10px}
+  .banner{background:var(--acc);margin-bottom:14px;display:flex!important;justify-content:space-between}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px 14px}
+  .tile{position:relative;background:none;padding:0;text-align:left;border-radius:10px}
+  .tile img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;display:block;background:var(--card);box-shadow:0 6px 18px rgba(0,0,0,.4)}
+  .tile .n{font-size:14px;font-weight:700;margin-top:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile .a{font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile .del{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:var(--bad);display:flex;align-items:center;justify-content:center;font-size:14px}
+  .empty{text-align:center;color:var(--mut);padding:28px 8px}
+  .note{color:var(--mut);font-size:13px}
+  /* room */
+  .top{display:flex;align-items:center;gap:8px;margin:12px 0}
+  .code{font-size:20px;font-weight:700;letter-spacing:4px}
+  .pill{font-size:12px;color:var(--mut);background:var(--card);padding:4px 10px;border-radius:999px;white-space:nowrap}
+  .top .sp{flex:1}
+  #cover{display:block;width:min(100%,320px);aspect-ratio:1;object-fit:cover;border-radius:14px;margin:8px auto 16px;box-shadow:0 14px 40px rgba(0,0,0,.55);background:var(--card)}
+  #title{font-size:22px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #artist{color:var(--mut);margin-bottom:8px;min-height:22px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   input[type=range]{width:100%;accent-color:var(--acc);height:32px;margin:0}
   .times{display:flex;justify-content:space-between;color:var(--mut);font-size:12px;margin-top:-4px}
-  .ctl{display:flex;gap:10px;margin:14px 0}
-  .ctl button{font-size:22px;padding:14px 0}
-  .ctl #pp{flex:2;background:var(--acc)}
-  #queue{list-style:none;margin:0;padding:0;overflow:auto;flex:1;-webkit-overflow-scrolling:touch}
-  #queue li{padding:12px;border-radius:10px;display:flex;gap:10px;align-items:center;cursor:pointer}
+  .ctl{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:12px 0 6px}
+  .ctl button{background:none;font-size:26px;padding:10px 14px;flex:0 0 auto;width:56px}
+  .ctl #pp{background:var(--fg);color:var(--bg);width:68px;height:68px;border-radius:50%;font-size:26px;padding:0}
+  .ctl #shuf{opacity:.45;font-size:22px}
+  .ctl #shuf.on{opacity:1;color:var(--acc)}
+  .ctl .ph{width:56px}
+  #queue{list-style:none;margin:0;padding:0}
+  #queue li{padding:10px;border-radius:10px;cursor:pointer;display:flex;gap:10px}
   #queue li.cur{background:var(--card);color:var(--acc)}
-  #queue li.miss{color:var(--bad)}
-  #queue li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tap{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:32px;z-index:10}
-  .tap button{background:var(--acc);font-size:20px;padding:22px}
+  #queue li .t{flex:1;min-width:0}
+  #queue li .t b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #queue li .t span{display:block;font-size:12px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tap{position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:32px;z-index:10}
+  .tap button{background:var(--acc);font-size:20px;padding:22px;width:100%}
   #toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));background:var(--card2);padding:12px 16px;border-radius:12px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
   #toast.on{opacity:1}
-  .note{color:var(--mut);font-size:13px}
 </style>
 </head>
 <body>
 
 <audio id="audio" playsinline></audio>
 
+<!-- HOME / LIBRARY -->
 <section id="home">
   <h1>Syncio</h1>
-  <p class="sub">Listen to your own music together, in sync.</p>
+  <p class="sub">Tap an album to start a party. Friends join with the code.</p>
 
-  <div class="card">
-    <div class="seg">
-      <label><input type="radio" name="mode" value="stream" checked><span><b>Stream</b>Host's audio is sent live. Friend needs no files.</span></label>
-      <label><input type="radio" name="mode" value="local"><span><b>Local files</b>Both pick the same files. Best sound, works with screen locked.</span></label>
+  <button class="banner btn block hide" id="banner"><span id="bannerTxt"></span><span>›</span></button>
+
+  <div class="card" id="joinCard">
+    <div class="row">
+      <input type="text" id="joinCode" maxlength="4" placeholder="CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="pri" id="join">Join party</button>
     </div>
-    <button class="pri" id="create">Create room</button>
   </div>
 
-  <div class="card">
-    <input type="text" id="joinCode" maxlength="4" placeholder="CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false">
-    <button id="join">Join room</button>
+  <div class="row" style="justify-content:space-between">
+    <h2 style="margin:0">Your albums</h2>
+    <span class="row">
+      <button class="small" id="editBtn">Edit</button>
+      <label class="btn small pri">+ Add music<input id="addFiles" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg" multiple hidden></label>
+    </span>
   </div>
-  <p class="note">Nothing is uploaded to a server. Music goes straight between your devices.</p>
+  <div style="height:12px"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty hide" id="empty">No albums yet.<br>Tap <b>+ Add music</b> and pick songs from your phone.<br>Albums and covers are read from each song's tags.</div>
+  <p class="note" style="margin-top:22px">Your music stays on your device. It's streamed straight to your friends, never uploaded to a server.</p>
 </section>
 
+<!-- PARTY -->
 <section id="room" class="hide">
   <div class="top">
     <span class="code" id="roomCode"></span>
     <span class="pill" id="peers"></span>
-    <button id="share">Invite</button>
+    <span class="sp"></span>
+    <button class="small" id="share">Invite</button>
   </div>
+  <div class="top" style="margin-top:0">
+    <button class="small hide" id="albumsBtn">‹ Albums</button>
+    <span class="sp"></span>
+    <button class="small" id="leave">Leave</button>
+  </div>
+
+  <img id="cover" alt="">
   <div id="title">Nothing playing</div>
-  <div id="status"></div>
+  <div id="artist"></div>
   <input type="range" id="seek" min="0" max="1000" value="0">
   <div class="times"><span id="cur">0:00</span><span id="dur">0:00</span></div>
   <div class="ctl">
+    <button id="shuf" aria-label="Shuffle">⤮</button>
     <button id="prev" aria-label="Previous">⏮</button>
     <button id="pp" aria-label="Play or pause">▶︎</button>
     <button id="next" aria-label="Next">⏭</button>
+    <span class="ph"></span>
   </div>
-  <label class="btn" id="addBtn" style="margin-bottom:10px">Add music<input id="files" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg" multiple hidden></label>
+  <h2>Up next</h2>
   <ul id="queue"></ul>
 </section>
 
@@ -98,6 +131,7 @@
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
 <script>
 (() => {
 'use strict';
@@ -105,270 +139,428 @@ const $ = id => document.getElementById(id);
 const audio = $('audio');
 const SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
 
-let role, mode, peer, conn, ctx, dest, wakeLock;
+let role = null, peer = null, conn = null, ctx = null, dest = null, wakeLock = null, pingTimer = null;
 let code = '';
-let conns = [];            // host: connected guests
-let queue = [];            // host: {name,size,file,url}; guest: {name,size}
-let idx = -1;
-let lastState = null;      // guest: last state msg from host
-let oneWay = 0.05;         // seconds, estimated one-way latency
-let loadedKey = '';
-let dragging = false;
-const localFiles = new Map(); // guest local mode: "name|size" -> File
+let conns = [];                 // host: connected guests
+let queue = [], orig = [], idx = -1, shuffleOn = false;   // host playback state
+let lastState = null, artMap = {}, oneWay = 0.05;        // guest view of host state
+let lib = [], hosted = [], editMode = false;
+let dragging = false, sessKey = '', sessPosAt = 0;
 
 /* ---------- helpers ---------- */
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('on'),2600); }
 const fmt = s => { s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
-const randCode = () => { const a='ABCDEFGHJKLMNPQRSTUVWXYZ'; let r=''; for(let i=0;i<4;i++) r+=a[Math.floor(Math.random()*a.length)]; return r; };
-const keyOf = q => q.name+'|'+q.size;
 const clean = n => n.replace(/\.[^.]+$/,'');
-function unlock(){ // must run inside a tap so iOS allows later programmatic play
+const randCode = () => { const a='ABCDEFGHJKLMNPQRSTUVWXYZ'; let r=''; for(let i=0;i<4;i++) r+=a[Math.floor(Math.random()*a.length)]; return r; };
+const shuffled = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+function unlock(){ // runs inside a tap so iOS lets us call play() later without a gesture
   audio.src = SILENT; audio.play().catch(()=>{});
   if (ctx && ctx.state !== 'running') ctx.resume();
 }
 function showTap(){ $('tap').classList.remove('hide'); }
-$('tapBtn').onclick = () => {
-  $('tap').classList.add('hide');
-  if (ctx) ctx.resume();
-  if (role==='guest' && mode==='local') syncLocal(); else audio.play().catch(()=>{});
-};
+$('tapBtn').onclick = () => { $('tap').classList.add('hide'); if (ctx) ctx.resume(); audio.play().catch(()=>{}); };
 async function keepAwake(){
   try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>wakeLock=null); } } catch {}
 }
 document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && role==='host' && !audio.paused) keepAwake(); });
 
-/* ---------- home ---------- */
-const hash = location.hash.replace('#','').toUpperCase();
-if (/^[A-Z]{4}$/.test(hash)) $('joinCode').value = hash;
-
-$('create').onclick = () => {
-  mode = document.querySelector('input[name=mode]:checked').value;
-  role = 'host';
-  if (mode === 'stream') {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    ctx = new AC();
-    ctx.resume();
-  }
-  unlock();
-  if (mode === 'stream') {
-    const src = ctx.createMediaElementSource(audio);
-    dest = ctx.createMediaStreamDestination();
-    src.connect(ctx.destination);
-    src.connect(dest);
-  }
-  openRoom(0);
-};
-
-function openRoom(attempt){
-  code = randCode();
-  peer = new Peer('syncio-' + code);
-  peer.on('open', () => enterRoom());
-  peer.on('connection', onGuest);
-  peer.on('error', e => {
-    if (e.type === 'unavailable-id' && attempt < 5) { peer.destroy(); openRoom(attempt+1); }
-    else toast('Connection error: ' + e.type);
+/* ---------- artwork ---------- */
+const phCache = {};
+function placeholder(t){
+  const k = ((t||'♪').trim()[0] || '♪').toUpperCase();
+  if (phCache[k]) return phCache[k];
+  const c = document.createElement('canvas'); c.width = c.height = 256;
+  const x = c.getContext('2d'), g = x.createLinearGradient(0,0,256,256);
+  g.addColorStop(0,'#6a4cf0'); g.addColorStop(1,'#1a1d24');
+  x.fillStyle = g; x.fillRect(0,0,256,256);
+  x.fillStyle = 'rgba(255,255,255,.9)'; x.font = '700 120px -apple-system,system-ui,sans-serif';
+  x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(k,128,138);
+  return phCache[k] = c.toDataURL('image/png');
+}
+function toThumb(blob, size = 256){
+  return new Promise(res => {
+    const img = new Image(), u = URL.createObjectURL(blob);
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = c.height = size;
+      const s = Math.min(img.width, img.height);
+      c.getContext('2d').drawImage(img,(img.width-s)/2,(img.height-s)/2,s,s,0,0,size,size);
+      URL.revokeObjectURL(u); res(c.toDataURL('image/jpeg',.82));
+    };
+    img.onerror = () => { URL.revokeObjectURL(u); res(null); };
+    img.src = u;
   });
-  peer.on('disconnected', () => { try{ peer.reconnect(); }catch{} });
 }
 
-$('join').onclick = () => {
-  code = $('joinCode').value.trim().toUpperCase();
-  if (!/^[A-Z]{4}$/.test(code)) return toast('Enter the 4-letter code');
-  role = 'guest';
-  unlock();
-  peer = new Peer();
-  peer.on('call', call => {
-    call.answer();
-    call.on('stream', s => { audio.srcObject = s; audio.play().catch(showTap); });
-  });
-  peer.on('open', () => {
-    conn = peer.connect('syncio-' + code, { reliable: true });
-    conn.on('open', () => { enterRoom(); ping(); setInterval(ping, 5000); });
-    conn.on('data', guestMsg);
-    conn.on('close', () => toast('Host left the room'));
-  });
-  peer.on('error', e => toast(e.type === 'peer-unavailable' ? 'Room not found' : 'Connection error: ' + e.type));
+/* ---------- library (IndexedDB) ---------- */
+function dbOpen(){ return new Promise((res,rej)=>{ const r=indexedDB.open('syncio',1); r.onupgradeneeded=()=>r.result.createObjectStore('tracks',{keyPath:'id'}); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function dbDo(mode, fn){ const d=await dbOpen(); return new Promise((res,rej)=>{ const t=d.transaction('tracks',mode); const r=fn(t.objectStore('tracks')); t.oncomplete=()=>res(r&&r.result); t.onerror=()=>rej(t.error); t.onabort=()=>rej(t.error); }); }
+const dbAll = () => dbDo('readonly', s => s.getAll());
+const dbPut = t => dbDo('readwrite', s => s.put(t));
+const dbDel = ids => dbDo('readwrite', s => { ids.forEach(i => s.delete(i)); });
+
+const readTags = f => new Promise(res => {
+  if (!window.jsmediatags) return res({});
+  window.jsmediatags.read(f, { onSuccess: t => res(t.tags || {}), onError: () => res({}) });
+});
+
+$('addFiles').onchange = async e => {
+  const files = [...e.target.files]; e.target.value = '';
+  let added = 0, unsaved = 0;
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i], id = f.name + '|' + f.size;
+    toast(`Reading ${i+1}/${files.length}…`);
+    if (lib.some(t => t.id === id)) continue;
+    const tags = await readTags(f);
+    const p = tags.picture;
+    const art = p && p.data ? await toThumb(new Blob([new Uint8Array(p.data)], { type: p.format || 'image/jpeg' })) : null;
+    const t = { id, file: f, art,
+      title: tags.title || clean(f.name), artist: tags.artist || 'Unknown artist',
+      album: tags.album || 'Unknown album', trackNo: parseInt(tags.track) || 0 };
+    lib.push(t); added++;
+    try { await dbPut(t); } catch { unsaved++; }
+  }
+  renderLibrary();
+  toast(unsaved ? `Added ${added}, but couldn't save them for next time` : `Added ${added} track${added===1?'':'s'}`);
 };
 
-function enterRoom(){
-  $('home').classList.add('hide');
-  $('room').classList.remove('hide');
+async function loadHosted(){ // optional: albums hosted in the repo at music/library.json
+  try {
+    const r = await fetch('music/library.json', { cache: 'no-cache' });
+    if (!r.ok) return;
+    const j = await r.json();
+    for (const a of j.albums || []) {
+      let art = null;
+      if (a.cover) { try { const cr = await fetch(a.cover); if (cr.ok) art = await toThumb(await cr.blob()); } catch {} }
+      (a.tracks || []).forEach((t, i) => hosted.push({
+        id: 'url|' + t.file, src: t.file, hosted: true, art,
+        title: t.title || clean(t.file.split('/').pop()), artist: t.artist || a.artist || '',
+        album: a.name, trackNo: i + 1 }));
+    }
+  } catch {}
+}
+
+function albums(){
+  const m = new Map();
+  lib.concat(hosted).forEach(t => {
+    const k = t.album.toLowerCase();
+    if (!m.has(k)) m.set(k, { name: t.album, tracks: [], art: null, hosted: true });
+    const a = m.get(k); a.tracks.push(t);
+    if (!a.art && t.art) a.art = t.art;
+    if (!t.hosted) a.hosted = false;
+  });
+  return [...m.values()].map(a => {
+    a.tracks.sort((x,y) => (x.trackNo||999)-(y.trackNo||999) || x.title.localeCompare(y.title));
+    const cnt = {}; a.tracks.forEach(t => cnt[t.artist] = (cnt[t.artist]||0)+1);
+    const top = Object.entries(cnt).sort((p,q) => q[1]-p[1]);
+    a.artist = top.length > 1 && top[0][1] < a.tracks.length * .6 ? 'Various artists' : (top[0] ? top[0][0] : '');
+    return a;
+  }).sort((x,y) => x.name.localeCompare(y.name));
+}
+
+function renderLibrary(){
+  const g = $('grid'); g.textContent = '';
+  const al = albums();
+  $('empty').classList.toggle('hide', al.length > 0);
+  $('editBtn').classList.toggle('hide', !al.some(a => !a.hosted));
+  al.forEach(a => {
+    const b = document.createElement('button'); b.className = 'tile';
+    const im = document.createElement('img'); im.alt = ''; im.src = a.art || placeholder(a.name);
+    const n = document.createElement('div'); n.className = 'n'; n.textContent = a.name;
+    const s = document.createElement('div'); s.className = 'a'; s.textContent = a.artist + ' · ' + a.tracks.length + (a.tracks.length === 1 ? ' track' : ' tracks');
+    b.append(im, n, s);
+    if (editMode && !a.hosted) {
+      const x = document.createElement('span'); x.className = 'del'; x.textContent = '✕'; b.append(x);
+      b.onclick = () => delAlbum(a);
+    } else b.onclick = () => startAlbum(a);
+    g.append(b);
+  });
+}
+$('editBtn').onclick = () => { editMode = !editMode; $('editBtn').textContent = editMode ? 'Done' : 'Edit'; renderLibrary(); };
+async function delAlbum(a){
+  if (!confirm(`Remove "${a.name}" from this device?`)) return;
+  const ids = a.tracks.map(t => t.id);
+  lib = lib.filter(t => !ids.includes(t.id));
+  try { await dbDel(ids); } catch {}
+  renderLibrary();
+}
+
+/* ---------- views ---------- */
+function showHome(){
+  $('room').classList.add('hide'); $('home').classList.remove('hide');
+  const inParty = !!role;
+  $('banner').classList.toggle('hide', !inParty);
+  $('bannerTxt').textContent = 'Party ' + code + ' is live. Tap to go back';
+  $('joinCard').classList.toggle('hide', inParty);
+  window.scrollTo(0,0);
+}
+function showRoom(){
+  $('home').classList.add('hide'); $('room').classList.remove('hide');
   $('roomCode').textContent = code;
-  history.replaceState(null,'','#'+code);
-  if (role === 'host') {
-    audio.addEventListener('play',  () => { broadcast(); keepAwake(); });
-    ['pause','seeked','loadedmetadata'].forEach(ev => audio.addEventListener(ev, broadcast));
-    audio.addEventListener('ended', () => act('next'));
-    setInterval(() => { if (conns.length && !audio.paused) broadcast(); }, 3000);
-    $('status').textContent = 'Share the invite link, then add music.';
-  } else {
-    $('addBtn').classList.add('hide');
-    $('status').textContent = 'Connected. Waiting for host…';
-  }
-  setupMediaSession();
-  setInterval(tick, 400);
-  render();
+  $('albumsBtn').classList.toggle('hide', role !== 'host');
+  $('leave').textContent = role === 'host' ? 'End party' : 'Leave';
+  render(); window.scrollTo(0,0);
+}
+$('banner').onclick = showRoom;
+$('albumsBtn').onclick = showHome;
+
+/* ---------- host: party ---------- */
+function initHost(){
+  const AC = window.AudioContext || window.webkitAudioContext;
+  ctx = new AC();
+  const src = ctx.createMediaElementSource(audio);   // iOS WebKit has no audio.captureStream(); Web Audio does the job
+  dest = ctx.createMediaStreamDestination();
+  src.connect(ctx.destination);
+  src.connect(dest);
 }
 
-$('share').onclick = async () => {
-  const url = location.origin + location.pathname + '#' + code;
-  try { if (navigator.share) { await navigator.share({ title:'Syncio', text:'Listen with me', url }); return; } } catch { return; }
-  try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch { toast(url); }
-};
+function startAlbum(a){
+  if (role === 'guest') return;
+  if (!ctx) initHost();
+  role = 'host';
+  unlock();
+  orig = a.tracks.slice();
+  queue = shuffleOn ? shuffled(orig) : orig.slice();
+  idx = -1;
+  const begin = () => { showRoom(); loadTrack(0, true); };
+  if (peer) begin(); else openRoom(0, begin);
+}
 
-/* ---------- host ---------- */
+let hostWired = false;
+function wireHost(){
+  if (hostWired) return; hostWired = true;
+  audio.addEventListener('play', () => { if (role==='host') { broadcast(); keepAwake(); } });
+  ['pause','seeked','loadedmetadata'].forEach(ev => audio.addEventListener(ev, () => { if (role==='host') broadcast(); }));
+  audio.addEventListener('ended', () => { if (role==='host') ctl('next'); });
+}
+
+function openRoom(attempt, cb){
+  code = randCode();
+  const p = peer = new Peer('syncio-' + code);
+  p.on('open', () => {
+    wireHost();
+    history.replaceState(null, '', '#' + code);
+    cb && cb();
+  });
+  p.on('connection', onGuest);
+  p.on('error', e => {
+    if (e.type === 'unavailable-id' && attempt < 5) { p.destroy(); peer = null; openRoom(attempt + 1, cb); }
+    else { toast('Connection error: ' + e.type); if (!p.open && p === peer) { peer = null; role = null; } }
+  });
+  p.on('disconnected', () => { try { p.reconnect(); } catch {} });
+}
+
 function onGuest(c){
   c.on('open', () => {
     conns.push(c);
-    if (mode === 'stream') peer.call(c.peer, dest.stream);
+    if (dest) peer.call(c.peer, dest.stream);
     c.send(stateMsg());
+    sendArt(c);
     render();
   });
   c.on('data', d => {
     if (d.t === 'ping') c.send({ t:'pong', id:d.id });
-    else if (d.t === 'cmd') ctl(d.c, d.v);
+    else if (d.t === 'cmd') ctl(d.c, d.v);       // guests: play/pause/next/prev/seek/jump only
   });
   c.on('close', () => { conns = conns.filter(x => x !== c); render(); });
 }
 
 function stateMsg(){
-  return { t:'state', mode, idx,
-    queue: queue.map(q => ({ name:q.name, size:q.size })),
+  return { t:'state', idx, shuffle: shuffleOn,
+    queue: queue.map(q => ({ id:q.id, title:q.title, artist:q.artist, album:q.album })),
     playing: !audio.paused && !audio.ended,
     pos: audio.currentTime || 0,
     dur: isFinite(audio.duration) ? audio.duration : 0 };
 }
 function broadcast(){ const m = stateMsg(); conns.forEach(c => c.open && c.send(m)); render(); }
+function sendArt(only){
+  const q = queue[idx]; if (!q || !q.art) return;
+  const m = { t:'art', id:q.id, url:q.art };
+  (only ? [only] : conns).forEach(c => c.open && c.send(m));
+}
 
 function loadTrack(i, autoplay){
   if (i < 0 || i >= queue.length) return;
   const q = queue[i];
-  q.url = q.url || URL.createObjectURL(q.file);
+  q.url = q.url || (q.file ? URL.createObjectURL(q.file) : q.src);
   idx = i;
   audio.srcObject = null;
   audio.src = q.url;
   if (ctx) ctx.resume();
   if (autoplay) audio.play().catch(showTap);
+  sendArt();
   broadcast();
 }
 
-function ctl(c, v){ // host applies a command (from itself or a guest)
+function ctl(c, v){ // host applies a command (own button, lock screen, or a guest)
   switch (c) {
     case 'play':  if (idx < 0) loadTrack(0, true); else { if (ctx) ctx.resume(); audio.play().catch(showTap); } break;
     case 'pause': audio.pause(); break;
     case 'next':  if (idx + 1 < queue.length) loadTrack(idx + 1, true); else audio.pause(); break;
     case 'prev':  if (audio.currentTime > 3 || idx <= 0) audio.currentTime = 0; else loadTrack(idx - 1, true); break;
     case 'seek':  if (isFinite(v)) audio.currentTime = v; break;
-    case 'jump':  loadTrack(v, true); break;
+    case 'jump':  if (Number.isInteger(v)) loadTrack(v, true); break;
   }
 }
-function act(c, v){ if (role === 'host') ctl(c, v); else if (conn && conn.open) conn.send({ t:'cmd', c, v }); }
+function act(c, v){ if (role === 'host') ctl(c, v); else if (role === 'guest' && conn && conn.open) conn.send({ t:'cmd', c, v }); }
+
+function setShuffle(on){            // host only
+  if (role !== 'host') return;
+  shuffleOn = on;
+  const cur = queue[idx];
+  if (on) { const rest = shuffled(queue.filter(t => t !== cur)); queue = cur ? [cur, ...rest] : rest; idx = cur ? 0 : -1; }
+  else { queue = orig.slice(); idx = cur ? queue.indexOf(cur) : -1; }
+  broadcast();
+}
+$('shuf').onclick = () => setShuffle(!shuffleOn);
 
 /* ---------- guest ---------- */
-function ping(){ if (conn && conn.open) conn.send({ t:'ping', id: performance.now() }); }
-function guestMsg(d){
-  if (d.t === 'pong') {
-    const one = (performance.now() - d.id) / 2000;
-    oneWay = oneWay * 0.6 + one * 0.4;
-  } else if (d.t === 'state') {
-    lastState = Object.assign(d, { recv: performance.now() });
-    mode = d.mode; queue = d.queue; idx = d.idx;
-    $('addBtn').classList.toggle('hide', mode !== 'local');
-    $('addBtn').firstChild.textContent = 'Select your copies of the music';
-    if (mode === 'local') syncLocal();
-    render();
-  }
-}
-
-function syncLocal(){
-  const s = lastState;
-  if (!s || s.idx < 0 || !queue[s.idx]) return;
-  const q = queue[s.idx];
-  const f = localFiles.get(keyOf(q));
-  if (!f) { $('status').textContent = 'You don’t have: ' + q.name; return; }
-  const go = () => {
-    const st = lastState;
-    const exp = st.pos + (st.playing ? (performance.now() - st.recv) / 1000 + oneWay : 0);
-    if (Math.abs(audio.currentTime - exp) > 0.35) audio.currentTime = exp;
-    if (st.playing && audio.paused) audio.play().catch(showTap);
-    if (!st.playing && !audio.paused) audio.pause();
-  };
-  const k = keyOf(q);
-  if (loadedKey !== k) {
-    loadedKey = k;
-    audio.srcObject = null;
-    audio.src = URL.createObjectURL(f);
-    audio.onloadedmetadata = () => { audio.onloadedmetadata = null; go(); };
-  } else go();
-}
-
-/* ---------- files ---------- */
-$('files').onchange = e => {
-  const files = [...e.target.files];
-  e.target.value = '';
-  if (role === 'host') {
-    files.forEach(f => queue.push({ name: f.name, size: f.size, file: f }));
-    if (idx < 0 && queue.length) { idx = 0; loadTrack(0, false); } else broadcast();
-  } else {
-    files.forEach(f => localFiles.set(f.name + '|' + f.size, f));
-    syncLocal(); render();
-  }
+$('join').onclick = () => {
+  if (role) return toast('Leave your current party first');
+  const c = $('joinCode').value.trim().toUpperCase();
+  if (!/^[A-Z]{4}$/.test(c)) return toast('Enter the 4-letter code');
+  code = c; role = 'guest'; artMap = {}; lastState = null;
+  unlock();
+  const p = peer = new Peer();
+  p.on('call', call => {
+    call.answer();
+    call.on('stream', s => { audio.srcObject = s; audio.play().catch(showTap); });
+  });
+  p.on('open', () => {
+    conn = p.connect('syncio-' + c, { reliable: true });
+    conn.on('open', () => { history.replaceState(null,'','#'+c); showRoom(); ping(); pingTimer = setInterval(ping, 5000); });
+    conn.on('data', guestMsg);
+    conn.on('close', () => { if (role === 'guest') { toast('The host ended the party'); leave(true); } });
+  });
+  p.on('error', e => { toast(e.type === 'peer-unavailable' ? 'Party not found' : 'Connection error: ' + e.type); if (role === 'guest' && !lastState) leave(true); });
 };
 
-/* ---------- UI ---------- */
-function isPlaying(){ return role === 'host' ? (!audio.paused && !audio.ended) : !!(lastState && lastState.playing); }
+function ping(){ if (conn && conn.open) conn.send({ t:'ping', id: performance.now() }); }
+function guestMsg(d){
+  if (d.t === 'pong') oneWay = oneWay * .6 + ((performance.now() - d.id) / 2000) * .4;
+  else if (d.t === 'state') { lastState = Object.assign(d, { recv: performance.now() }); render(); }
+  else if (d.t === 'art') { artMap[d.id] = d.url; render(); }
+}
+
+function leave(silent){
+  clearInterval(pingTimer);
+  try { peer && peer.destroy(); } catch {}
+  peer = null; conn = null; conns = []; role = null; lastState = null; artMap = {};
+  queue = []; orig = []; idx = -1; sessKey = '';
+  audio.pause(); audio.srcObject = null; audio.removeAttribute('src');
+  if (wakeLock) { try { wakeLock.release(); } catch {} wakeLock = null; }
+  if ('mediaSession' in navigator) { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; }
+  history.replaceState(null, '', location.pathname);
+  showHome();
+  if (!silent) toast('Party ended');
+}
+$('leave').onclick = () => { if (role === 'host' && !confirm('End the party for everyone?')) return; leave(); };
+
+$('share').onclick = async () => {
+  const url = location.origin + location.pathname + '#' + code;
+  try { if (navigator.share) { await navigator.share({ title:'Join my Syncio party', text:'Party code ' + code, url }); return; } } catch { return; }
+  try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch { toast('Code: ' + code); }
+};
+
+/* ---------- shared UI ---------- */
+const Q = () => role === 'host' ? queue : (lastState ? lastState.queue : []);
+const IDX = () => role === 'host' ? idx : (lastState ? lastState.idx : -1);
+const isPlaying = () => role === 'host' ? (!audio.paused && !audio.ended) : !!(lastState && lastState.playing);
+const artFor = m => (role === 'host' ? m.art : artMap[m.id]) || placeholder(m.album || m.title);
+
 function render(){
-  $('peers').textContent = role === 'host' ? (conns.length ? conns.length + ' listening' : 'waiting…') : (mode === 'local' ? 'local files' : 'streaming');
-  const q = queue[idx];
-  $('title').textContent = q ? clean(q.name) : 'Nothing playing';
-  if (q && 'mediaSession' in navigator) navigator.mediaSession.metadata = new MediaMetadata({ title: clean(q.name), artist: 'Syncio ' + code });
+  if (!role) return;
+  const q = Q(), i = IDX(), m = q[i];
+  $('title').textContent = m ? m.title : 'Nothing playing';
+  $('artist').textContent = m ? m.artist + (m.album ? ' · ' + m.album : '') : '';
+  const art = m ? artFor(m) : placeholder('♪');
+  if ($('cover').dataset.k !== art.slice(-40) + art.length) { $('cover').src = art; $('cover').dataset.k = art.slice(-40) + art.length; }
   $('pp').textContent = isPlaying() ? '⏸' : '▶︎';
+  $('shuf').classList.toggle('hide', role !== 'host');
+  $('shuf').classList.toggle('on', role === 'host' ? shuffleOn : false);
+  $('peers').textContent = role === 'host' ? (conns.length ? conns.length + ' listening' : 'waiting for friends…') : 'listening';
+  $('bannerTxt').textContent = 'Party ' + code + ' is live. Tap to go back';
   const ul = $('queue'); ul.textContent = '';
-  queue.forEach((item, i) => {
-    const li = document.createElement('li');
-    const missing = role === 'guest' && mode === 'local' && !localFiles.has(keyOf(item));
-    if (i === idx) li.classList.add('cur');
-    if (missing) li.classList.add('miss');
-    const sp = document.createElement('span');
-    sp.textContent = (missing ? '⚠ ' : '') + clean(item.name);
-    li.appendChild(sp);
-    li.onclick = () => act('jump', i);
-    ul.appendChild(li);
+  q.forEach((it, n) => {
+    const li = document.createElement('li'); if (n === i) li.className = 'cur';
+    const t = document.createElement('div'); t.className = 't';
+    const b = document.createElement('b'); b.textContent = it.title;
+    const s = document.createElement('span'); s.textContent = it.artist;
+    t.append(b, s); li.append(t);
+    li.onclick = () => act('jump', n);
+    ul.append(li);
   });
-  if (role === 'guest' && lastState) {
-    const miss = mode === 'local' && queue.filter(x => !localFiles.has(keyOf(x))).length;
-    $('status').textContent = miss ? miss + ' track(s) missing on your device' : 'In sync';
-  } else if (role === 'host' && conns.length) $('status').textContent = '';
+  if (m) document.title = m.title + ' · Syncio';
+  updateSession(true);
+}
+
+function timing(){
+  if (role === 'host') return { cur: audio.currentTime || 0, dur: isFinite(audio.duration) ? audio.duration : 0 };
+  if (!lastState) return { cur: 0, dur: 0 };
+  const cur = lastState.pos + (lastState.playing ? (performance.now() - lastState.recv) / 1000 + oneWay : 0);
+  return { cur: lastState.dur ? Math.min(cur, lastState.dur) : cur, dur: lastState.dur };
 }
 function tick(){
-  let cur = 0, dur = 0;
-  if (role === 'host' || (role === 'guest' && mode === 'local')) { cur = audio.currentTime; dur = isFinite(audio.duration) ? audio.duration : 0; }
-  else if (lastState) { dur = lastState.dur; cur = lastState.pos + (lastState.playing ? (performance.now() - lastState.recv) / 1000 + oneWay : 0); }
-  if (role === 'guest' && mode === 'local' && lastState && lastState.dur) dur = dur || lastState.dur;
-  if (dur) cur = Math.min(cur, dur);
+  if (!role) return;
+  const { cur, dur } = timing();
   $('cur').textContent = fmt(cur); $('dur').textContent = fmt(dur);
   if (!dragging) $('seek').value = dur ? Math.round(cur / dur * 1000) : 0;
   $('pp').textContent = isPlaying() ? '⏸' : '▶︎';
-  // keep guest's local playback honest even between state messages
-  if (role === 'guest' && mode === 'local' && lastState && lastState.playing && audio.paused && audio.readyState > 1 && loadedKey === keyOf(queue[lastState.idx] || {})) audio.play().catch(()=>{});
+  updateSession(false);
 }
+setInterval(tick, 400);
+setInterval(() => { if (role === 'host' && conns.length && !audio.paused) broadcast(); }, 3000);
+
 $('seek').addEventListener('pointerdown', () => dragging = true);
-$('seek').addEventListener('touchstart', () => dragging = true, { passive:true });
+$('seek').addEventListener('touchstart', () => dragging = true, { passive: true });
 $('seek').addEventListener('change', () => {
   dragging = false;
-  const dur = role === 'host' || mode === 'local' ? audio.duration : (lastState && lastState.dur);
+  const { dur } = timing();
   if (dur) act('seek', $('seek').value / 1000 * dur);
 });
 $('pp').onclick = () => { if (ctx) ctx.resume(); act(isPlaying() ? 'pause' : 'play'); };
 $('prev').onclick = () => act('prev');
 $('next').onclick = () => act('next');
 
-function setupMediaSession(){
+/* ---------- lock screen / Dynamic Island ---------- */
+function updateSession(metaOnly){
+  if (!('mediaSession' in navigator) || !role) return;
+  const m = Q()[IDX()]; if (!m) return;
+  const art = artFor(m);
+  const key = m.id + '|' + art.length;
+  if (key !== sessKey) {
+    sessKey = key;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: m.title, artist: m.artist, album: m.album || 'Syncio party ' + code,
+      artwork: [{ src: art, sizes: '256x256', type: art.startsWith('data:image/png') ? 'image/png' : 'image/jpeg' }] });
+  }
+  navigator.mediaSession.playbackState = isPlaying() ? 'playing' : 'paused';
+  const now = performance.now();
+  if (now - sessPosAt > 1000 || metaOnly) {
+    sessPosAt = now;
+    const { cur, dur } = timing();
+    if (dur > 0 && isFinite(dur)) { try { navigator.mediaSession.setPositionState({ duration: dur, position: Math.min(Math.max(cur,0),dur), playbackRate: 1 }); } catch {} }
+  }
+}
+(function setupMediaSession(){
   if (!('mediaSession' in navigator)) return;
   const h = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch {} };
-  h('play', () => act('play')); h('pause', () => act('pause'));
-  h('nexttrack', () => act('next')); h('previoustrack', () => act('prev'));
-}
+  h('play',  () => act('play'));
+  h('pause', () => act('pause'));
+  h('nexttrack', () => act('next'));
+  h('previoustrack', () => act('prev'));
+  h('seekto', d => { if (d && isFinite(d.seekTime)) act('seek', d.seekTime); });
+  // seekbackward/seekforward are deliberately NOT set: iOS would show ±10s buttons instead of prev/next.
+})();
+
+/* ---------- boot ---------- */
+(async function init(){
+  const h = location.hash.replace('#','').toUpperCase();
+  if (/^[A-Z]{4}$/.test(h)) $('joinCode').value = h;
+  try { lib = await dbAll() || []; } catch { lib = []; }
+  await loadHosted();
+  renderLibrary();
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
+})();
 })();
 </script>
 </body>
