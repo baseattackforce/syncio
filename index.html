@@ -169,7 +169,7 @@ $('tapBtn').onclick = () => { $('tap').classList.add('hide'); if (ctx) ctx.resum
 async function keepAwake(){
   try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>wakeLock=null); } } catch {}
 }
-document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && role==='host' && !audio.paused) keepAwake(); });
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && role && !audio.paused) keepAwake(); });
 
 /* ---------- artwork ---------- */
 const phCache = {};
@@ -473,7 +473,7 @@ $('join').onclick = () => {
   const p = peer = new Peer();
   p.on('call', call => {
     call.answer();
-    call.on('stream', s => { audio.srcObject = s; audio.play().catch(showTap); });
+    call.on('stream', s => { audio.srcObject = s; audio.play().catch(showTap); keepAwake(); });
   });
   p.on('open', () => {
     conn = p.connect('syncio-' + c, { reliable: true });
@@ -487,7 +487,7 @@ $('join').onclick = () => {
 function ping(){ if (conn && conn.open) conn.send({ t:'ping', id: performance.now() }); }
 function guestMsg(d){
   if (d.t === 'pong') oneWay = oneWay * .6 + ((performance.now() - d.id) / 2000) * .4;
-  else if (d.t === 'state') { lastState = Object.assign(d, { recv: performance.now() }); render(); }
+  else if (d.t === 'state') { lastState = Object.assign(d, { recv: performance.now() }); if (d.playing) keepAwake(); render(); }
   else if (d.t === 'art') { artMap[d.id] = d.url; render(); }
 }
 
