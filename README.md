@@ -25,3 +25,12 @@ Only do this with music you have the rights to publish: a public Pages site is p
 
 ## Deploy
 Settings → Pages → deploy from branch `master`, root folder.
+
+## Building `library.json` automatically
+Drop your files under `music/` (any folder layout), then:
+
+```
+pip install mutagen
+python3 tools/make-library.py
+```
+It reads each file's tags, groups them into albums, extracts embedded cover art, and writes `music/library.json`.
