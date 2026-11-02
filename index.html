@@ -605,9 +605,9 @@ function render(){
     ul.append(li);
   });
   if (m) document.title = m.title + ' · Syncio';
-  applyBg(art);
-  renderLyrics();
+  try { applyBg(art); } catch {}
   updateSession(true);
+  try { renderLyrics(); } catch (e) { console.error(e); }
 }
 
 function timing(){
@@ -648,10 +648,12 @@ const cleanTitle = t => t.replace(/\s*[\(\[][^\)\]]*[\)\]]\s*/g, ' ').replace(/\
 const lyLoad = id => { try { return JSON.parse(localStorage.getItem('ly1:' + id)); } catch { return null; } };
 const lySave = (id, v) => { try { localStorage.setItem('ly1:' + id, JSON.stringify(v)); } catch {} };
 
+let lrcReached = false;           // did LRCLIB answer at all (even with "not found")?
 async function lrcGet(path, params){
-  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 8000);
+  const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 9000);
   try {
     const r = await fetch('https://lrclib.net/api/' + path + '?' + new URLSearchParams(params), { signal: ctl.signal });
+    lrcReached = true;
     return r.ok ? await r.json() : null;
   } catch { return null; } finally { clearTimeout(to); }
 }
@@ -669,22 +671,42 @@ function parseLrc(txt){
   out.sort((a, b) => a.t - b.t);
   return out.length ? out : null;
 }
+const norm = t => (t || '').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim();
+function scoreHit(x, m, dur){            // -1 = not the same song; higher = better match
+  if (!x || !(x.syncedLyrics || x.plainLyrics || x.instrumental)) return -1;
+  let sc = x.syncedLyrics ? 100 : x.plainLyrics ? 40 : 20;
+  const tn = norm(x.trackName || x.name), full = norm(m.title), core = norm(cleanTitle(m.title));
+  if (tn === full) sc += 50; else if (tn === core) sc += 40; else if (core && (tn.includes(core) || core.includes(tn))) sc += 10; else return -1;
+  const an = norm(x.artistName), ma = norm(firstArtist(m.artist));
+  if (an && ma && (an.includes(ma) || ma.includes(an))) sc += 30; else return -1;
+  if (dur && x.duration) { const d = Math.abs(x.duration - dur); if (d <= 2) sc += 40; else if (d <= 6) sc += 15; else if (d > 20) return -1; }
+  return sc;
+}
 async function findLyrics(m, dur){
-  const artist = firstArtist(m.artist);
-  let hit = await lrcGet('get', Object.assign({ track_name: m.title, artist_name: artist, album_name: m.album || '' }, dur ? { duration: Math.round(dur) } : {}));
-  if (!hit || hit.statusCode || !(hit.syncedLyrics || hit.plainLyrics || hit.instrumental)) {
-    hit = null;
-    const list = await lrcGet('search', { track_name: cleanTitle(m.title), artist_name: artist });
-    if (Array.isArray(list)) {
-      const ok = list.filter(x => (x.syncedLyrics || x.plainLyrics || x.instrumental) && (!dur || !x.duration || Math.abs(x.duration - dur) <= 6));
-      ok.sort((a, b) => (!!b.syncedLyrics - !!a.syncedLyrics) || (dur ? Math.abs((a.duration||dur) - dur) - Math.abs((b.duration||dur) - dur) : 0));
-      hit = ok[0] || null;
+  lrcReached = false;
+  const artist = firstArtist(m.artist), title = cleanTitle(m.title), d = dur ? { duration: Math.round(dur) } : {};
+  const tries = [
+    () => lrcGet('get',    Object.assign({ track_name: m.title, artist_name: artist, album_name: m.album || '' }, d)),
+    () => lrcGet('get',    Object.assign({ track_name: m.title, artist_name: artist }, d)),
+    () => lrcGet('search', { track_name: title, artist_name: artist }),
+    () => lrcGet('search', { q: title + ' ' + artist }),
+    () => lrcGet('search', { track_name: title, artist_name: m.artist }),
+    () => lrcGet('search', { track_name: title }),
+  ];
+  let best = null, bestSc = -1, fails = 0;
+  for (const t of tries) {
+    const r = await t();
+    if (!lrcReached && ++fails >= 2) break;                    // offline: don't wait out every attempt
+    for (const x of (Array.isArray(r) ? r : (r && !r.statusCode ? [r] : []))) {
+      const sc = scoreHit(x, m, dur);
+      if (sc > bestSc) { best = x; bestSc = sc; }
     }
+    if (best && best.syncedLyrics && bestSc >= 170) break;     // great match, stop early
   }
-  if (!hit) return { found: false };
-  if (hit.instrumental) return { found: true, instrumental: true };
-  const synced = parseLrc(hit.syncedLyrics);
-  return { found: !!(synced || hit.plainLyrics), synced, plain: synced ? null : (hit.plainLyrics || null) };
+  if (!best) return { found: false, net: lrcReached };
+  if (best.instrumental && !best.syncedLyrics && !best.plainLyrics) return { found: true, instrumental: true };
+  const synced = parseLrc(best.syncedLyrics);
+  return { found: !!(synced || best.plainLyrics), synced, plain: synced ? null : (best.plainLyrics || null), net: true };
 }
 
 async function hostLyrics(){            // host fetches once per song and shares with everyone
@@ -722,7 +744,15 @@ function renderLyrics(){
   const msg = t => { const p = document.createElement('div'); p.className = 'ly-msg'; p.textContent = t; box.append(p); };
   if (!m) return msg('Nothing playing');
   if (!d) return msg('Finding lyrics…');
-  if (!d.found) return msg('No lyrics for this song');
+  if (!d.found) {
+    msg(d.net === false ? 'Couldn\u2019t reach the lyrics service' : 'No lyrics found for this song');
+    if (role === 'host') {
+      const b = document.createElement('button'); b.className = 'small'; b.textContent = 'Try again'; b.style.cssText = 'display:block;margin:-14vh auto 0';
+      b.onclick = () => { delete lyMap[m.id]; lyKey = ''; renderLyrics(); hostLyrics(); };
+      box.append(b);
+    }
+    return;
+  }
   if (d.instrumental) return msg('Instrumental');
   if (!d.synced) {
     const n = document.createElement('div'); n.className = 'ly-note'; n.textContent = 'These lyrics aren\u2019t timed for this song.'; box.append(n);
@@ -790,17 +820,38 @@ window.addEventListener('pageshow', revive);
 setInterval(revive, 1500);
 
 /* ---------- lock screen / Dynamic Island ---------- */
+const artSets = new Map();
+function makeVariants(art){            // 96..512px JPEG blobs so iOS can pick the size it wants
+  return new Promise(res => {
+    const im = new Image();
+    im.onload = async () => {
+      const out = [];
+      for (const n of [96, 128, 192, 256, 384, 512]) {
+        const c = document.createElement('canvas'); c.width = c.height = n;
+        c.getContext('2d').drawImage(im, 0, 0, n, n);
+        const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', .88));
+        if (blob) out.push({ src: URL.createObjectURL(blob), sizes: n + 'x' + n, type: 'image/jpeg' });
+      }
+      res(out);
+    };
+    im.onerror = () => res(null);
+    im.src = art;
+  });
+}
+function setMeta(m, art, key){
+  const list = artSets.get(art) || [{ src: artUrl(art), sizes: '512x512', type: art.startsWith('data:image/png') ? 'image/png' : 'image/jpeg' }];
+  try { navigator.mediaSession.metadata = new MediaMetadata({ title: m.title, artist: m.artist, album: m.album || 'Syncio party ' + code, artwork: list }); } catch {}
+  if (!artSets.has(art)) {
+    artSets.set(art, null);
+    makeVariants(art).then(v => { if (v && v.length) { artSets.set(art, v); if (sessKey === key) setMeta(m, art, key); } else artSets.delete(art); });
+  }
+}
 function updateSession(metaOnly){
   if (!('mediaSession' in navigator) || !role) return;
   const m = Q()[IDX()]; if (!m) return;
   const art = artFor(m);
   const key = m.id + '|' + art.length;
-  if (key !== sessKey) {
-    sessKey = key;
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: m.title, artist: m.artist, album: m.album || 'Syncio party ' + code,
-      artwork: [{ src: artUrl(art), sizes: '512x512', type: art.startsWith('data:image/png') ? 'image/png' : 'image/jpeg' }] });
-  }
+  if (key !== sessKey) { sessKey = key; setMeta(m, art, key); }
   navigator.mediaSession.playbackState = isPlaying() ? 'playing' : 'paused';
   const now = performance.now();
   if (now - sessPosAt > 1000 || metaOnly) {
