@@ -51,9 +51,15 @@
   .ctl{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:12px 0 6px}
   .ctl button{background:none;font-size:26px;padding:10px 14px;flex:0 0 auto;width:56px}
   .ctl #pp{background:var(--fg);color:var(--bg);width:68px;height:68px;border-radius:50%;font-size:26px;padding:0}
-  .ctl #shuf{opacity:.45;font-size:22px}
+  .ctl #shuf{opacity:.45}
   .ctl #shuf.on{opacity:1;color:var(--acc)}
   .ctl .ph{width:56px}
+  .ctl button svg{width:28px;height:28px;fill:currentColor;display:block;margin:auto}
+  .ctl #pp svg{width:34px;height:34px}
+  .ico{display:inline-flex;vertical-align:middle}
+  .ico svg{width:20px;height:20px;fill:currentColor}
+  .small .ico{margin-right:2px;margin-left:-6px}
+  .tile .del svg{width:16px;height:16px;fill:#fff}
   #queue{list-style:none;margin:0;padding:0}
   #queue li{padding:10px;border-radius:10px;cursor:pointer;display:flex;gap:10px}
   #queue li.cur{background:var(--card);color:var(--acc)}
@@ -75,7 +81,7 @@
   <h1>Syncio</h1>
   <p class="sub">Tap an album to start a party. Friends join with the code.</p>
 
-  <button class="banner btn block hide" id="banner"><span id="bannerTxt"></span><span>›</span></button>
+  <button class="banner btn block hide" id="banner"><span id="bannerTxt"></span><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg></span></button>
 
   <div class="card" id="joinCard">
     <div class="row">
@@ -106,7 +112,7 @@
     <button class="small" id="share">Invite</button>
   </div>
   <div class="top" style="margin-top:0">
-    <button class="small hide" id="albumsBtn">‹ Albums</button>
+    <button class="small hide" id="albumsBtn"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></span>Albums</button>
     <span class="sp"></span>
     <button class="small" id="leave">Leave</button>
   </div>
@@ -117,10 +123,10 @@
   <input type="range" id="seek" min="0" max="1000" value="0">
   <div class="times"><span id="cur">0:00</span><span id="dur">0:00</span></div>
   <div class="ctl">
-    <button id="shuf" aria-label="Shuffle">⤮</button>
-    <button id="prev" aria-label="Previous">⏮</button>
-    <button id="pp" aria-label="Play or pause">▶︎</button>
-    <button id="next" aria-label="Next">⏭</button>
+    <button id="shuf" aria-label="Shuffle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.59 9.17 5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg></button>
+    <button id="prev" aria-label="Previous"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></button>
+    <button id="pp" aria-label="Play or pause"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg></button>
+    <button id="next" aria-label="Next"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
     <span class="ph"></span>
   </div>
   <h2>Up next</h2>
@@ -168,7 +174,7 @@ document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==
 /* ---------- artwork ---------- */
 const phCache = {};
 function placeholder(t){
-  const k = ((t||'♪').trim()[0] || '♪').toUpperCase();
+  const k = ((t||'S').trim()[0] || 'S').toUpperCase();
   if (phCache[k]) return phCache[k];
   const c = document.createElement('canvas'); c.width = c.height = 256;
   const x = c.getContext('2d'), g = x.createLinearGradient(0,0,256,256);
@@ -313,7 +319,7 @@ function renderLibrary(){
     const s = document.createElement('div'); s.className = 'a'; s.textContent = a.artist + ' · ' + a.tracks.length + (a.tracks.length === 1 ? ' track' : ' tracks');
     b.append(im, n, s);
     if (editMode && !a.hosted) {
-      const x = document.createElement('span'); x.className = 'del'; x.textContent = '✕'; b.append(x);
+      const x = document.createElement('span'); x.className = 'del'; x.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>'; b.append(x);
       b.onclick = () => delAlbum(a);
     } else b.onclick = () => startAlbum(a);
     g.append(b);
@@ -511,14 +517,18 @@ const IDX = () => role === 'host' ? idx : (lastState ? lastState.idx : -1);
 const isPlaying = () => role === 'host' ? (!audio.paused && !audio.ended) : !!(lastState && lastState.playing);
 const artFor = m => (role === 'host' ? m.art : artMap[m.id]) || placeholder(m.album || m.title);
 
+let ppState = null;
+const PP = { play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>', pause: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>' };
+function setPP(playing){ if (ppState === playing) return; ppState = playing; $('pp').innerHTML = playing ? PP.pause : PP.play; }
+
 function render(){
   if (!role) return;
   const q = Q(), i = IDX(), m = q[i];
   $('title').textContent = m ? m.title : 'Nothing playing';
   $('artist').textContent = m ? m.artist + (m.album ? ' · ' + m.album : '') : '';
-  const art = m ? artFor(m) : placeholder('♪');
+  const art = m ? artFor(m) : placeholder('S');
   if ($('cover').dataset.k !== art.slice(-40) + art.length) { $('cover').src = art; $('cover').dataset.k = art.slice(-40) + art.length; }
-  $('pp').textContent = isPlaying() ? '⏸' : '▶︎';
+  setPP(isPlaying());
   $('shuf').classList.toggle('hide', role !== 'host');
   $('shuf').classList.toggle('on', role === 'host' ? shuffleOn : false);
   $('peers').textContent = role === 'host' ? (conns.length ? conns.length + ' listening' : 'waiting for friends…') : 'listening';
@@ -548,7 +558,7 @@ function tick(){
   const { cur, dur } = timing();
   $('cur').textContent = fmt(cur); $('dur').textContent = fmt(dur);
   if (!dragging) $('seek').value = dur ? Math.round(cur / dur * 1000) : 0;
-  $('pp').textContent = isPlaying() ? '⏸' : '▶︎';
+  setPP(isPlaying());
   updateSession(false);
 }
 setInterval(tick, 400);
