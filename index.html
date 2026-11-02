@@ -153,6 +153,7 @@ let queue = [], orig = [], idx = -1, shuffleOn = false;   // host playback state
 let lastState = null, artMap = {}, oneWay = 0.05;        // guest view of host state
 let lib = [], hosted = [], editMode = false;
 let dragging = false, sessKey = '', sessPosAt = 0;
+let wantPlay = false;           // what the user last asked for; used to wake audio iOS has put to sleep
 
 /* ---------- helpers ---------- */
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('on'),2600); }
@@ -359,6 +360,7 @@ function initHost(){
   ctx = new AC();
   const src = ctx.createMediaElementSource(audio);   // iOS WebKit has no audio.captureStream(); Web Audio does the job
   dest = ctx.createMediaStreamDestination();
+  ctx.onstatechange = () => revive();
   src.connect(ctx.destination);
   src.connect(dest);
 }
@@ -436,22 +438,28 @@ function loadTrack(i, autoplay){
   audio.srcObject = null;
   audio.src = q.url;
   if (ctx) ctx.resume();
-  if (autoplay) audio.play().catch(showTap);
+  if (autoplay) { wantPlay = true; audio.play().catch(showTap); }
   sendArt();
   broadcast();
 }
 
 function ctl(c, v){ // host applies a command (own button, lock screen, or a guest)
   switch (c) {
-    case 'play':  if (idx < 0) loadTrack(0, true); else { if (ctx) ctx.resume(); audio.play().catch(showTap); } break;
-    case 'pause': audio.pause(); break;
-    case 'next':  if (idx + 1 < queue.length) loadTrack(idx + 1, true); else audio.pause(); break;
+    case 'play':  wantPlay = true; if (idx < 0) loadTrack(0, true); else { if (ctx) ctx.resume(); audio.play().catch(showTap); } break;
+    case 'pause': wantPlay = false; audio.pause(); break;
+    case 'next':  if (idx + 1 < queue.length) loadTrack(idx + 1, true); else { wantPlay = false; audio.pause(); } break;
     case 'prev':  if (audio.currentTime > 3 || idx <= 0) audio.currentTime = 0; else loadTrack(idx - 1, true); break;
     case 'seek':  if (isFinite(v)) audio.currentTime = v; break;
     case 'jump':  if (Number.isInteger(v)) loadTrack(v, true); break;
   }
 }
-function act(c, v){ if (role === 'host') ctl(c, v); else if (role === 'guest' && conn && conn.open) conn.send({ t:'cmd', c, v }); }
+function act(c, v){
+  if (role === 'host') ctl(c, v);
+  else if (role === 'guest' && conn && conn.open) {
+    if (c === 'play') wantPlay = true; else if (c === 'pause') wantPlay = false;
+    conn.send({ t:'cmd', c, v });
+  }
+}
 
 function setShuffle(on){            // host only
   if (role !== 'host') return;
@@ -487,7 +495,7 @@ $('join').onclick = () => {
 function ping(){ if (conn && conn.open) conn.send({ t:'ping', id: performance.now() }); }
 function guestMsg(d){
   if (d.t === 'pong') oneWay = oneWay * .6 + ((performance.now() - d.id) / 2000) * .4;
-  else if (d.t === 'state') { lastState = Object.assign(d, { recv: performance.now() }); if (d.playing) keepAwake(); render(); }
+  else if (d.t === 'state') { lastState = Object.assign(d, { recv: performance.now() }); wantPlay = d.playing; if (d.playing) keepAwake(); render(); }
   else if (d.t === 'art') { artMap[d.id] = d.url; render(); }
 }
 
@@ -575,6 +583,18 @@ $('pp').onclick = () => { if (ctx) ctx.resume(); act(isPlaying() ? 'pause' : 'pl
 $('prev').onclick = () => act('prev');
 $('next').onclick = () => act('next');
 
+/* ---------- waking audio that iOS paused in the background ---------- */
+function revive(){
+  if (!role) return;
+  if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
+  const playable = role === 'host' ? idx >= 0 : !!audio.srcObject;
+  if (wantPlay && playable && audio.paused) audio.play().catch(() => {});
+}
+audio.addEventListener('pause', () => { if (wantPlay) setTimeout(revive, 150); });
+document.addEventListener('visibilitychange', revive);
+window.addEventListener('pageshow', revive);
+setInterval(revive, 1500);
+
 /* ---------- lock screen / Dynamic Island ---------- */
 function updateSession(metaOnly){
   if (!('mediaSession' in navigator) || !role) return;
@@ -598,7 +618,7 @@ function updateSession(metaOnly){
 (function setupMediaSession(){
   if (!('mediaSession' in navigator)) return;
   const h = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch {} };
-  h('play',  () => act('play'));
+  h('play',  () => { if (ctx) ctx.resume(); if (role === 'guest' && audio.srcObject) audio.play().catch(() => {}); act('play'); });
   h('pause', () => act('pause'));
   h('nexttrack', () => act('next'));
   h('previoustrack', () => act('prev'));
