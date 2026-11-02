@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f1115">
+<title>Syncio</title>
+<style>
+  :root{--bg:#0f1115;--card:#1a1d24;--card2:#242832;--fg:#f2f4f8;--mut:#8b93a3;--acc:#7c5cff;--acc2:#5b3fe0;--ok:#3ddc97;--bad:#ff6b6b}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:16px/1.4 -apple-system,system-ui,Segoe UI,Roboto,sans-serif}
+  body{padding:env(safe-area-inset-top) max(16px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(16px,env(safe-area-inset-left));display:flex;flex-direction:column;max-width:560px;margin:0 auto}
+  h1{font-size:28px;margin:28px 0 4px;letter-spacing:-.5px}
+  p.sub{color:var(--mut);margin:0 0 24px}
+  .card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:14px}
+  button,.btn{appearance:none;border:0;border-radius:12px;padding:14px 16px;font:inherit;font-weight:600;color:var(--fg);background:var(--card2);width:100%;text-align:center;display:block;cursor:pointer;touch-action:manipulation}
+  button.pri,.btn.pri{background:var(--acc)}
+  button:active,.btn:active{filter:brightness(.85)}
+  input[type=text]{width:100%;padding:14px;border-radius:12px;border:2px solid var(--card2);background:var(--bg);color:var(--fg);font:inherit;font-size:20px;letter-spacing:4px;text-transform:uppercase;text-align:center;margin-bottom:10px}
+  .seg{display:flex;gap:8px;margin:0 0 12px}
+  .seg label{flex:1;background:var(--card2);border-radius:12px;padding:10px 12px;font-size:14px;cursor:pointer;border:2px solid transparent}
+  .seg input{display:none}
+  .seg input:checked+span{color:var(--fg)}
+  .seg label:has(input:checked){border-color:var(--acc)}
+  .seg b{display:block;font-size:15px}
+  .seg span{color:var(--mut);font-size:12px}
+  .hide{display:none!important}
+  #room{flex:1;display:flex;flex-direction:column;min-height:0}
+  .top{display:flex;align-items:center;gap:10px;margin:14px 0}
+  .code{font-size:22px;font-weight:700;letter-spacing:4px}
+  .pill{font-size:12px;color:var(--mut);background:var(--card);padding:4px 10px;border-radius:999px}
+  .top button{width:auto;padding:8px 14px;margin-left:auto}
+  #title{font-size:20px;font-weight:700;margin:6px 0 2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #status{color:var(--mut);font-size:13px;min-height:18px;margin-bottom:10px}
+  input[type=range]{width:100%;accent-color:var(--acc);height:32px;margin:0}
+  .times{display:flex;justify-content:space-between;color:var(--mut);font-size:12px;margin-top:-4px}
+  .ctl{display:flex;gap:10px;margin:14px 0}
+  .ctl button{font-size:22px;padding:14px 0}
+  .ctl #pp{flex:2;background:var(--acc)}
+  #queue{list-style:none;margin:0;padding:0;overflow:auto;flex:1;-webkit-overflow-scrolling:touch}
+  #queue li{padding:12px;border-radius:10px;display:flex;gap:10px;align-items:center;cursor:pointer}
+  #queue li.cur{background:var(--card);color:var(--acc)}
+  #queue li.miss{color:var(--bad)}
+  #queue li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tap{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:32px;z-index:10}
+  .tap button{background:var(--acc);font-size:20px;padding:22px}
+  #toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));background:var(--card2);padding:12px 16px;border-radius:12px;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+  #toast.on{opacity:1}
+  .note{color:var(--mut);font-size:13px}
+</style>
+</head>
+<body>
+
+<audio id="audio" playsinline></audio>
+
+<section id="home">
+  <h1>Syncio</h1>
+  <p class="sub">Listen to your own music together, in sync.</p>
+
+  <div class="card">
+    <div class="seg">
+      <label><input type="radio" name="mode" value="stream" checked><span><b>Stream</b>Host's audio is sent live. Friend needs no files.</span></label>
+      <label><input type="radio" name="mode" value="local"><span><b>Local files</b>Both pick the same files. Best sound, works with screen locked.</span></label>
+    </div>
+    <button class="pri" id="create">Create room</button>
+  </div>
+
+  <div class="card">
+    <input type="text" id="joinCode" maxlength="4" placeholder="CODE" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button id="join">Join room</button>
+  </div>
+  <p class="note">Nothing is uploaded to a server. Music goes straight between your devices.</p>
+</section>
+
+<section id="room" class="hide">
+  <div class="top">
+    <span class="code" id="roomCode"></span>
+    <span class="pill" id="peers"></span>
+    <button id="share">Invite</button>
+  </div>
+  <div id="title">Nothing playing</div>
+  <div id="status"></div>
+  <input type="range" id="seek" min="0" max="1000" value="0">
+  <div class="times"><span id="cur">0:00</span><span id="dur">0:00</span></div>
+  <div class="ctl">
+    <button id="prev" aria-label="Previous">⏮</button>
+    <button id="pp" aria-label="Play or pause">▶︎</button>
+    <button id="next" aria-label="Next">⏭</button>
+  </div>
+  <label class="btn" id="addBtn" style="margin-bottom:10px">Add music<input id="files" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg" multiple hidden></label>
+  <ul id="queue"></ul>
+</section>
+
+<div class="tap hide" id="tap"><button id="tapBtn">Tap to enable sound</button></div>
+<div id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const audio = $('audio');
+const SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
+
+let role, mode, peer, conn, ctx, dest, wakeLock;
+let code = '';
+let conns = [];            // host: connected guests
+let queue = [];            // host: {name,size,file,url}; guest: {name,size}
+let idx = -1;
+let lastState = null;      // guest: last state msg from host
+let oneWay = 0.05;         // seconds, estimated one-way latency
+let loadedKey = '';
+let dragging = false;
+const localFiles = new Map(); // guest local mode: "name|size" -> File
+
+/* ---------- helpers ---------- */
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(toast.t); toast.t=setTimeout(()=>t.classList.remove('on'),2600); }
+const fmt = s => { s=Math.max(0,Math.floor(s||0)); return Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); };
+const randCode = () => { const a='ABCDEFGHJKLMNPQRSTUVWXYZ'; let r=''; for(let i=0;i<4;i++) r+=a[Math.floor(Math.random()*a.length)]; return r; };
+const keyOf = q => q.name+'|'+q.size;
+const clean = n => n.replace(/\.[^.]+$/,'');
+function unlock(){ // must run inside a tap so iOS allows later programmatic play
+  audio.src = SILENT; audio.play().catch(()=>{});
+  if (ctx && ctx.state !== 'running') ctx.resume();
+}
+function showTap(){ $('tap').classList.remove('hide'); }
+$('tapBtn').onclick = () => {
+  $('tap').classList.add('hide');
+  if (ctx) ctx.resume();
+  if (role==='guest' && mode==='local') syncLocal(); else audio.play().catch(()=>{});
+};
+async function keepAwake(){
+  try { if ('wakeLock' in navigator && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release',()=>wakeLock=null); } } catch {}
+}
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible' && role==='host' && !audio.paused) keepAwake(); });
+
+/* ---------- home ---------- */
+const hash = location.hash.replace('#','').toUpperCase();
+if (/^[A-Z]{4}$/.test(hash)) $('joinCode').value = hash;
+
+$('create').onclick = () => {
+  mode = document.querySelector('input[name=mode]:checked').value;
+  role = 'host';
+  if (mode === 'stream') {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+    ctx.resume();
+  }
+  unlock();
+  if (mode === 'stream') {
+    const src = ctx.createMediaElementSource(audio);
+    dest = ctx.createMediaStreamDestination();
+    src.connect(ctx.destination);
+    src.connect(dest);
+  }
+  openRoom(0);
+};
+
+function openRoom(attempt){
+  code = randCode();
+  peer = new Peer('syncio-' + code);
+  peer.on('open', () => enterRoom());
+  peer.on('connection', onGuest);
+  peer.on('error', e => {
+    if (e.type === 'unavailable-id' && attempt < 5) { peer.destroy(); openRoom(attempt+1); }
+    else toast('Connection error: ' + e.type);
+  });
+  peer.on('disconnected', () => { try{ peer.reconnect(); }catch{} });
+}
+
+$('join').onclick = () => {
+  code = $('joinCode').value.trim().toUpperCase();
+  if (!/^[A-Z]{4}$/.test(code)) return toast('Enter the 4-letter code');
+  role = 'guest';
+  unlock();
+  peer = new Peer();
+  peer.on('call', call => {
+    call.answer();
+    call.on('stream', s => { audio.srcObject = s; audio.play().catch(showTap); });
+  });
+  peer.on('open', () => {
+    conn = peer.connect('syncio-' + code, { reliable: true });
+    conn.on('open', () => { enterRoom(); ping(); setInterval(ping, 5000); });
+    conn.on('data', guestMsg);
+    conn.on('close', () => toast('Host left the room'));
+  });
+  peer.on('error', e => toast(e.type === 'peer-unavailable' ? 'Room not found' : 'Connection error: ' + e.type));
+};
+
+function enterRoom(){
+  $('home').classList.add('hide');
+  $('room').classList.remove('hide');
+  $('roomCode').textContent = code;
+  history.replaceState(null,'','#'+code);
+  if (role === 'host') {
+    audio.addEventListener('play',  () => { broadcast(); keepAwake(); });
+    ['pause','seeked','loadedmetadata'].forEach(ev => audio.addEventListener(ev, broadcast));
+    audio.addEventListener('ended', () => act('next'));
+    setInterval(() => { if (conns.length && !audio.paused) broadcast(); }, 3000);
+    $('status').textContent = 'Share the invite link, then add music.';
+  } else {
+    $('addBtn').classList.add('hide');
+    $('status').textContent = 'Connected. Waiting for host…';
+  }
+  setupMediaSession();
+  setInterval(tick, 400);
+  render();
+}
+
+$('share').onclick = async () => {
+  const url = location.origin + location.pathname + '#' + code;
+  try { if (navigator.share) { await navigator.share({ title:'Syncio', text:'Listen with me', url }); return; } } catch { return; }
+  try { await navigator.clipboard.writeText(url); toast('Link copied'); } catch { toast(url); }
+};
+
+/* ---------- host ---------- */
+function onGuest(c){
+  c.on('open', () => {
+    conns.push(c);
+    if (mode === 'stream') peer.call(c.peer, dest.stream);
+    c.send(stateMsg());
+    render();
+  });
+  c.on('data', d => {
+    if (d.t === 'ping') c.send({ t:'pong', id:d.id });
+    else if (d.t === 'cmd') ctl(d.c, d.v);
+  });
+  c.on('close', () => { conns = conns.filter(x => x !== c); render(); });
+}
+
+function stateMsg(){
+  return { t:'state', mode, idx,
+    queue: queue.map(q => ({ name:q.name, size:q.size })),
+    playing: !audio.paused && !audio.ended,
+    pos: audio.currentTime || 0,
+    dur: isFinite(audio.duration) ? audio.duration : 0 };
+}
+function broadcast(){ const m = stateMsg(); conns.forEach(c => c.open && c.send(m)); render(); }
+
+function loadTrack(i, autoplay){
+  if (i < 0 || i >= queue.length) return;
+  const q = queue[i];
+  q.url = q.url || URL.createObjectURL(q.file);
+  idx = i;
+  audio.srcObject = null;
+  audio.src = q.url;
+  if (ctx) ctx.resume();
+  if (autoplay) audio.play().catch(showTap);
+  broadcast();
+}
+
+function ctl(c, v){ // host applies a command (from itself or a guest)
+  switch (c) {
+    case 'play':  if (idx < 0) loadTrack(0, true); else { if (ctx) ctx.resume(); audio.play().catch(showTap); } break;
+    case 'pause': audio.pause(); break;
+    case 'next':  if (idx + 1 < queue.length) loadTrack(idx + 1, true); else audio.pause(); break;
+    case 'prev':  if (audio.currentTime > 3 || idx <= 0) audio.currentTime = 0; else loadTrack(idx - 1, true); break;
+    case 'seek':  if (isFinite(v)) audio.currentTime = v; break;
+    case 'jump':  loadTrack(v, true); break;
+  }
+}
+function act(c, v){ if (role === 'host') ctl(c, v); else if (conn && conn.open) conn.send({ t:'cmd', c, v }); }
+
+/* ---------- guest ---------- */
+function ping(){ if (conn && conn.open) conn.send({ t:'ping', id: performance.now() }); }
+function guestMsg(d){
+  if (d.t === 'pong') {
+    const one = (performance.now() - d.id) / 2000;
+    oneWay = oneWay * 0.6 + one * 0.4;
+  } else if (d.t === 'state') {
+    lastState = Object.assign(d, { recv: performance.now() });
+    mode = d.mode; queue = d.queue; idx = d.idx;
+    $('addBtn').classList.toggle('hide', mode !== 'local');
+    $('addBtn').firstChild.textContent = 'Select your copies of the music';
+    if (mode === 'local') syncLocal();
+    render();
+  }
+}
+
+function syncLocal(){
+  const s = lastState;
+  if (!s || s.idx < 0 || !queue[s.idx]) return;
+  const q = queue[s.idx];
+  const f = localFiles.get(keyOf(q));
+  if (!f) { $('status').textContent = 'You don’t have: ' + q.name; return; }
+  const go = () => {
+    const st = lastState;
+    const exp = st.pos + (st.playing ? (performance.now() - st.recv) / 1000 + oneWay : 0);
+    if (Math.abs(audio.currentTime - exp) > 0.35) audio.currentTime = exp;
+    if (st.playing && audio.paused) audio.play().catch(showTap);
+    if (!st.playing && !audio.paused) audio.pause();
+  };
+  const k = keyOf(q);
+  if (loadedKey !== k) {
+    loadedKey = k;
+    audio.srcObject = null;
+    audio.src = URL.createObjectURL(f);
+    audio.onloadedmetadata = () => { audio.onloadedmetadata = null; go(); };
+  } else go();
+}
+
+/* ---------- files ---------- */
+$('files').onchange = e => {
+  const files = [...e.target.files];
+  e.target.value = '';
+  if (role === 'host') {
+    files.forEach(f => queue.push({ name: f.name, size: f.size, file: f }));
+    if (idx < 0 && queue.length) { idx = 0; loadTrack(0, false); } else broadcast();
+  } else {
+    files.forEach(f => localFiles.set(f.name + '|' + f.size, f));
+    syncLocal(); render();
+  }
+};
+
+/* ---------- UI ---------- */
+function isPlaying(){ return role === 'host' ? (!audio.paused && !audio.ended) : !!(lastState && lastState.playing); }
+function render(){
+  $('peers').textContent = role === 'host' ? (conns.length ? conns.length + ' listening' : 'waiting…') : (mode === 'local' ? 'local files' : 'streaming');
+  const q = queue[idx];
+  $('title').textContent = q ? clean(q.name) : 'Nothing playing';
+  if (q && 'mediaSession' in navigator) navigator.mediaSession.metadata = new MediaMetadata({ title: clean(q.name), artist: 'Syncio ' + code });
+  $('pp').textContent = isPlaying() ? '⏸' : '▶︎';
+  const ul = $('queue'); ul.textContent = '';
+  queue.forEach((item, i) => {
+    const li = document.createElement('li');
+    const missing = role === 'guest' && mode === 'local' && !localFiles.has(keyOf(item));
+    if (i === idx) li.classList.add('cur');
+    if (missing) li.classList.add('miss');
+    const sp = document.createElement('span');
+    sp.textContent = (missing ? '⚠ ' : '') + clean(item.name);
+    li.appendChild(sp);
+    li.onclick = () => act('jump', i);
+    ul.appendChild(li);
+  });
+  if (role === 'guest' && lastState) {
+    const miss = mode === 'local' && queue.filter(x => !localFiles.has(keyOf(x))).length;
+    $('status').textContent = miss ? miss + ' track(s) missing on your device' : 'In sync';
+  } else if (role === 'host' && conns.length) $('status').textContent = '';
+}
+function tick(){
+  let cur = 0, dur = 0;
+  if (role === 'host' || (role === 'guest' && mode === 'local')) { cur = audio.currentTime; dur = isFinite(audio.duration) ? audio.duration : 0; }
+  else if (lastState) { dur = lastState.dur; cur = lastState.pos + (lastState.playing ? (performance.now() - lastState.recv) / 1000 + oneWay : 0); }
+  if (role === 'guest' && mode === 'local' && lastState && lastState.dur) dur = dur || lastState.dur;
+  if (dur) cur = Math.min(cur, dur);
+  $('cur').textContent = fmt(cur); $('dur').textContent = fmt(dur);
+  if (!dragging) $('seek').value = dur ? Math.round(cur / dur * 1000) : 0;
+  $('pp').textContent = isPlaying() ? '⏸' : '▶︎';
+  // keep guest's local playback honest even between state messages
+  if (role === 'guest' && mode === 'local' && lastState && lastState.playing && audio.paused && audio.readyState > 1 && loadedKey === keyOf(queue[lastState.idx] || {})) audio.play().catch(()=>{});
+}
+$('seek').addEventListener('pointerdown', () => dragging = true);
+$('seek').addEventListener('touchstart', () => dragging = true, { passive:true });
+$('seek').addEventListener('change', () => {
+  dragging = false;
+  const dur = role === 'host' || mode === 'local' ? audio.duration : (lastState && lastState.dur);
+  if (dur) act('seek', $('seek').value / 1000 * dur);
+});
+$('pp').onclick = () => { if (ctx) ctx.resume(); act(isPlaying() ? 'pause' : 'play'); };
+$('prev').onclick = () => act('prev');
+$('next').onclick = () => act('next');
+
+function setupMediaSession(){
+  if (!('mediaSession' in navigator)) return;
+  const h = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch {} };
+  h('play', () => act('play')); h('pause', () => act('pause'));
+  h('nexttrack', () => act('next')); h('previoustrack', () => act('prev'));
+}
+})();
+</script>
+</body>
+</html>
