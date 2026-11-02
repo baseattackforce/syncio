@@ -3,7 +3,7 @@
 Listen to your own music together, in sync. Static site, no backend, works on GitHub Pages and is built for iOS (Safari and Chrome).
 
 ## How it works
-1. Tap **+ Add music** and pick songs from your phone. Albums, titles, artists and cover art are read from each file's tags and saved on the device (IndexedDB).
+1. Tap **+ Add music** and pick songs **or a .zip of them** from your phone (zips are unzipped on the device, nothing is uploaded). Albums, titles, artists and cover art are read from each file's tags and saved on the device (IndexedDB).
 2. Tap an album. That starts a party and gives you a 4-letter code (or tap **Invite** to share a link).
 3. Friends type the code under **Join party**. The host's audio is streamed live to them over WebRTC (via Web Audio, since iOS has no `captureStream()`).
 4. Everyone can pause, skip and go back. Only the host can shuffle or change album.

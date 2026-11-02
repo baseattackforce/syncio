@@ -88,7 +88,7 @@
     <h2 style="margin:0">Your albums</h2>
     <span class="row">
       <button class="small" id="editBtn">Edit</button>
-      <label class="btn small pri">+ Add music<input id="addFiles" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg" multiple hidden></label>
+      <label class="btn small pri">+ Add music<input id="addFiles" type="file" accept="audio/*,.mp3,.m4a,.aac,.wav,.flac,.ogg,.zip,application/zip,application/x-zip-compressed" multiple hidden></label>
     </span>
   </div>
   <div style="height:12px"></div>
@@ -132,6 +132,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
 <script>
 (() => {
 'use strict';
@@ -203,8 +204,51 @@ const readTags = f => new Promise(res => {
   window.jsmediatags.read(f, { onSuccess: t => res(t.tags || {}), onError: () => res({}) });
 });
 
+const AUDIO_RE = /\.(mp3|m4a|aac|flac|ogg|wav)$/i;
+const MIME = { mp3:'audio/mpeg', m4a:'audio/mp4', aac:'audio/aac', flac:'audio/flac', ogg:'audio/ogg', wav:'audio/wav' };
+const isZip = f => /\.zip$/i.test(f.name) || /zip/.test(f.type);
+
+// Streams a zip in 4 MB slices so a 200 MB archive never has to sit in memory at once.
+async function unzipAudio(zip, onFound){
+  const fl = window.fflate, out = [];
+  const uz = new fl.Unzip();
+  uz.register(fl.UnzipInflate);
+  uz.register(fl.UnzipPassThrough);
+  uz.onfile = entry => {
+    const base = entry.name.split('/').pop();
+    if (entry.name.startsWith('__MACOSX/') || base.startsWith('.') || !AUDIO_RE.test(base)) return; // not started = skipped
+    const chunks = [];
+    entry.ondata = (err, chunk, final) => {
+      if (err) throw err;
+      chunks.push(chunk);
+      if (final) {
+        const ext = base.split('.').pop().toLowerCase();
+        out.push(new File(chunks, base, { type: MIME[ext] || 'audio/mpeg' }));
+        onFound(out.length);
+      }
+    };
+    entry.start();
+  };
+  const CH = 4 * 1024 * 1024;
+  for (let o = 0; o < zip.size; o += CH) {
+    const buf = new Uint8Array(await zip.slice(o, o + CH).arrayBuffer());
+    uz.push(buf, o + CH >= zip.size);
+  }
+  return out;
+}
+
 $('addFiles').onchange = async e => {
-  const files = [...e.target.files]; e.target.value = '';
+  const picked = [...e.target.files]; e.target.value = '';
+  const files = [];
+  for (const f of picked) {
+    if (!isZip(f)) { files.push(f); continue; }
+    if (!window.fflate) { toast('Zip support didn\u2019t load. Check your connection and reload.'); continue; }
+    try {
+      const found = await unzipAudio(f, n => toast(`Unzipping ${f.name}: ${n} songs…`));
+      if (!found.length) toast(`No audio files found in ${f.name}`);
+      files.push(...found);
+    } catch (err) { toast(`Couldn\u2019t read ${f.name}`); }
+  }
   let added = 0, unsaved = 0;
   for (let i = 0; i < files.length; i++) {
     const f = files[i], id = f.name + '|' + f.size;
